@@ -23,11 +23,6 @@ Original Source: 1997 - Frank Maddin and Jim Norwood
 Prepared for public release: 03/28/2005 - Charlie Wiederhold, 3D Realms
 */
 //-------------------------------------------------------------------------
-
-// This file has been modified in part for SWMapster32 // dmc2017
-
-#define SMALLFNTCURSOR 2821
-// ^ from duke3d names.h, the rest is
 // edited from NAMES2.H from SW source
 
 // multi player start

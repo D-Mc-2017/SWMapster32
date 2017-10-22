@@ -2,6 +2,8 @@
 // Ken Silverman's official web site: "http://www.advsys.net/ken"
 // See the included license file "BUILDLIC.TXT" for license info.
 
+// This file has been modified in part for SWMapster32 // dmc2017
+
 #ifndef __editor_h__
 #define __editor_h__
 
@@ -11,7 +13,7 @@
 extern "C" {
 #endif
 
-#define VERSION " 2.0.0devel"
+#define VERSION " 1.0"
 
 // Build keys
 #define BK_MOVEFORWARD   0
@@ -154,13 +156,13 @@ int32_t getpointhighlight(int32_t xplc, int32_t yplc, int32_t point);
 void update_highlight();
 void update_highlightsector();
 
-#ifdef _WIN32
-#define DEFAULT_GAME_EXEC "eduke32.exe"
-#define DEFAULT_GAME_LOCAL_EXEC "eduke32.exe"
-#else
-#define DEFAULT_GAME_EXEC "eduke32"
-#define DEFAULT_GAME_LOCAL_EXEC "./eduke32"
-#endif
+// #ifdef _WIN32
+#define DEFAULT_GAME_EXEC "swp.exe"
+#define DEFAULT_GAME_LOCAL_EXEC "swp.exe"
+// #else
+// #define DEFAULT_GAME_EXEC "eduke32"
+// #define DEFAULT_GAME_LOCAL_EXEC "./eduke32"
+// #endif
 
 void test_map(int32_t mode);
 

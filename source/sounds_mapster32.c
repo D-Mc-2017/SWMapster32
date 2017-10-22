@@ -20,8 +20,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 //-------------------------------------------------------------------------
 
-// Stripped sounds.c for use in Mapster32, breaks all ties to game & music
+// This file has been modified in part for SWMapster32 // dmc2017
 
+
+// Stripped sounds.c for use in Mapster32, breaks all ties to game & music
 //#include <conio.h>
 #include <stdio.h>
 #include <string.h>
@@ -42,10 +44,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "winlayer.h"
 #endif
 
-#include "sounds_mapster32.h"
+#include "sounds_mapster32.h" 
 
 #define LOUDESTVOLUME 150
-#define MUSICANDSFX 5
 
 static char SM32_havesound = 0;
 
@@ -163,6 +164,8 @@ int32_t S_PlaySound3D(int32_t num, int32_t i, const vec3_t *pos)
     int32_t sndist, cx, cy, cz, j/*,k*/;
     int32_t pitche,pitchs,cs;
     int32_t voice, sndang, ca, pitch;
+    int ambient; // dmc2017
+    
 
     //    if(num != 358) return 0;
 
@@ -196,9 +199,19 @@ int32_t S_PlaySound3D(int32_t num, int32_t i, const vec3_t *pos)
 
     sndist = FindDistance3D((cx-pos->x),(cy-pos->y),(cz-pos->z)>>4);
 
-    if (i >= 0 && (g_sounds[num].m&16) == 0 && PN == MUSICANDSFX && SLT < 999 && (sector[SECT].lotag&0xff) < 9)
+    if (PN == 2307 && sprite[i].hitag == 1002) // dmc2017
+    {
+        ambient = 1;
+    }
+    else
+    {
+        ambient = 0;
+    }
+    
+    if (i >= 0 && (g_sounds[num].m&16) == 0 && ambient == 1 && SLT < 999 && (sector[SECT].lotag&0xff) < 9)
         sndist = divscale14(sndist,(SHT+1));
 
+    
     pitchs = g_sounds[num].ps;
     pitche = g_sounds[num].pe;
     cx = klabs(pitche-pitchs);
@@ -213,7 +226,7 @@ int32_t S_PlaySound3D(int32_t num, int32_t i, const vec3_t *pos)
 
     sndist += g_sounds[num].vo;
     if (sndist < 0) sndist = 0;
-    if (cs > -1 && sndist && PN != MUSICANDSFX && !cansee(cx,cy,cz-(24<<8),cs,SX,SY,SZ-(24<<8),SECT))
+    if (cs > -1 && sndist && ambient != 1 && !cansee(cx,cy,cz-(24<<8),cs,SX,SY,SZ-(24<<8),SECT))
         sndist += sndist>>5;
     /*
         switch (num)
@@ -230,12 +243,12 @@ int32_t S_PlaySound3D(int32_t num, int32_t i, const vec3_t *pos)
     */
     if (cursectnum > -1 && sector[cursectnum].lotag == 2 && (g_sounds[num].m&4) == 0)
         pitch = -768;
-    if (sndist > 31444 && PN != MUSICANDSFX)
+    if (sndist > 31444 && ambient != 1)
         return -1;
 //        break;
 //    }
 
-    if (g_sounds[num].num > 0 && PN != MUSICANDSFX)
+    if (g_sounds[num].num > 0 && ambient != 1)
     {
         if (g_sounds[num].SoundOwner[0].i == i) S_StopSound(num);
         else if (g_sounds[num].num > 1) S_StopSound(num);
@@ -367,6 +380,7 @@ void S_StopEnvSound(int32_t num,int32_t i)
     int32_t j, k;
 
     if (num >= 0 && num < MAXSOUNDS)
+    
         if (g_sounds[num].num > 0)
         {
             k = g_sounds[num].num;
@@ -383,6 +397,7 @@ void S_Update(void)
 {
     int32_t sndist, sx, sy, sz, cx, cy, cz;
     int32_t sndang,ca,j,k,i,cs;
+    int ambient,
 
     g_numEnvSoundsPlaying = 0;
 
@@ -396,6 +411,14 @@ void S_Update(void)
         for (k=0; k<g_sounds[j].num; k++)
         {
             i = g_sounds[j].SoundOwner[k].i;
+            if (sprite[i].picnum == 2307 && sprite[i].hitag == 1002)
+            {
+                ambient = 1;
+            }
+            else
+            {
+                ambient = 0;
+            }
 
             sx = sprite[i].x;
             sy = sprite[i].y;
@@ -404,16 +427,17 @@ void S_Update(void)
             sndang = 2048 + ca - getangle(cx-sx,cy-sy);
             sndang &= 2047;
             sndist = FindDistance3D((cx-sx),(cy-sy),(cz-sz)>>4);
-            if (i >= 0 && (g_sounds[j].m&16) == 0 && PN == MUSICANDSFX && SLT < 999 && (sector[SECT].lotag&0xff) < 9)
+            
+            if (i >= 0 && (g_sounds[j].m&16) == 0 && ambient == 1 && SLT < 999 && (sector[SECT].lotag&0xff) < 9)
                 sndist = divscale14(sndist,(SHT+1));
 
             sndist += g_sounds[j].vo;
             if (sndist < 0) sndist = 0;
 
-            if (cs > -1 && sndist && PN != MUSICANDSFX && !cansee(cx,cy,cz-(24<<8),cs,sx,sy,sz-(24<<8),SECT))
+            if (cs > -1 && sndist && ambient != 1 && !cansee(cx,cy,cz-(24<<8),cs,sx,sy,sz-(24<<8),SECT))
                 sndist += sndist>>5;
 
-            if (PN == MUSICANDSFX && SLT < 999)
+            if (ambient == 1 && SLT < 999)
                 g_numEnvSoundsPlaying++;
             /*
                         switch (j)
@@ -425,7 +449,7 @@ void S_Update(void)
                             break;
                         default:
             */
-            if (sndist > 31444 && PN != MUSICANDSFX)
+            if (sndist > 31444 && ambient != 1)
             {
                 S_StopSound(j);
                 continue;
@@ -435,10 +459,20 @@ void S_Update(void)
             if (g_sounds[j].ptr == 0 && S_LoadSound(j) == 0) continue;
             if (g_sounds[j].m&16) sndist = 0;
 
-            if (sndist < ((255-LOUDESTVOLUME)<<6))
-                sndist = ((255-LOUDESTVOLUME)<<6);
+            if (sndist < ((255-LOUDESTVOLUME)<<6)) // 6))
+                sndist = ((255-LOUDESTVOLUME)<<6); // 6);
 
-            FX_Pan3D(g_sounds[j].SoundOwner[k].voice,sndang>>4,sndist>>6);
+                
+            switch (sprite[i].lotag) // dmc2017
+            {
+                case 23: case 68: case 78: case 79:  // -8000
+                    FX_Pan3D(g_sounds[j].SoundOwner[k].voice,sndang>>4,sndist>>9);
+                break;
+                default: 
+                    FX_Pan3D(g_sounds[j].SoundOwner[k].voice,sndang>>4,sndist>>10);
+                break;
+            }                        
+            // FX_Pan3D(g_sounds[j].SoundOwner[k].voice,sndang>>4,sndist>>6);
         }
 }
 
@@ -454,7 +488,7 @@ void S_Callback(uint32_t num)
             for (j=0; j<k; j++)
             {
                 i = g_sounds[num].SoundOwner[j].i;
-                if (sprite[i].picnum == MUSICANDSFX && sector[sprite[i].sectnum].lotag < 3 && sprite[i].lotag < 999)
+                if (sprite[i].picnum == 2307 && sprite[i].hitag == 1002 && sector[sprite[i].sectnum].lotag < 3 && sprite[i].lotag < 999)
                 {
 //                    ActorExtra[i].temp_data[0] = 0;
                     sprite[i].filler &= (~1);

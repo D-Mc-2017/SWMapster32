@@ -1,0 +1,79 @@
+// #Shadow Warrior voxel script file.  
+// #Last modified: 11-25-96
+// 
+// #Format: (editart tile number) (unique voxel number) (voxel file name)
+// #Note: do NOT use duplicate voxel numbers or you'll over write the
+// #      previous one loaded!
+// 
+// #TILE VOXNUM FILENAME
+// #=====================
+
+// voxel "name.kvx" { scale # tile ## }
+voxel medpak.kvx { scale 1 tile 1802 } 
+voxel medkit.kvx { scale 1 tile 1803 } 
+voxel uzi.kvx { scale 1 tile 1797 } 
+voxel grenade.kvx { scale 1 tile 1817 } 
+voxel gunbarl.kvx { scale 1 tile 764  } 
+voxel camera.kvx { scale 1 tile 765  } 
+voxel 40mmbox.kvx { scale 1 tile 1831 } 
+voxel mines.kvx { scale 1 tile 1842 } 
+voxel shotgun.kvx { scale 1 tile 1794 } 
+voxel rocket.kvx { scale 1 tile 1818 } 
+voxel shtgammo.kvx { scale 1 tile 1823 } 
+voxel rcktammo.kvx { scale 1 tile 1800 } 
+voxel tools.KVX { scale 1 tile 1813 } 
+voxel uziclip.kvx { scale 1 tile 1799 } 
+voxel nitevis.kvx { scale 1 tile 3031 } 
+voxel railgun.kvx { scale 1 tile 1811 } 
+voxel railpak.kvx { scale 1 tile 1812 } 
+voxel armor.kvx { scale 1 tile 3030 } 
+voxel star.kvx { scale 1 tile 1793 } 
+voxel heat.kvx { scale 1 tile 1819 } 
+voxel coin.kvx { scale 1 tile 1792 } 
+voxel heart.kvx { scale 1 tile 1824 } 
+voxel heart2.kvx { scale 1 tile 1825 } 
+voxel uziside.kvx { scale 1 tile 1807 } 
+voxel bomb.kvx { scale 1 tile 1809 } 
+voxel smoke.kvx { scale 1 tile 1808 } 
+voxel flash.kvx { scale 1 tile 1805 } 
+voxel gorohead.kvx { scale 1 tile 1814 } 
+voxel shadow.kvx { scale 1 tile 1804 } 
+voxel caltrop.kvx { scale 1 tile 1829 } 
+voxel cookie.kvx { scale 1 tile 1810 } 
+voxel techkey.kvx { scale 1 tile 1766 } 
+voxel oldkey.kvx { scale 1 tile 1765 } 
+voxel flag1.kvx { scale 1 tile 2520 } 
+voxel flag2.kvx { scale 1 tile 2521 } 
+voxel flag3.kvx { scale 1 tile 2522 } 
+voxel keycard.kvx { scale 1 tile 1767 } 
+voxel oldlock.kvx { scale 1 tile 1846 } 
+voxel oldlock2.kvx { scale 1 tile 1847 } 
+voxel kcrdlck1.kvx { scale 1 tile 1850 } 
+voxel kcrdlck2.kvx { scale 1 tile 1851 } 
+voxel tchklck1.kvx { scale 1 tile 1852 } 
+voxel tchklck2.kvx { scale 1 tile 1853 } 
+voxel tchklck3.kvx { scale 1 tile 1854 } 
+voxel oldkey.kvx { scale 1 tile 1769 } 
+voxel oldkey.kvx { scale 1 tile 1773 } 
+voxel oldkey.kvx { scale 1 tile 1777 } 
+voxel techkey.kvx { scale 1 tile 1770 } 
+voxel techkey.kvx { scale 1 tile 1774 } 
+voxel techkey.kvx { scale 1 tile 1778 } 
+voxel keycard.kvx { scale 1 tile 1771 } 
+voxel keycard.kvx { scale 1 tile 1775 } 
+voxel keycard.kvx { scale 1 tile 1779 } 
+voxel mine.kvx { scale 1 tile 817 } 
+voxel mine2.kvx { scale 1 tile 818 } 
+voxel mine3.kvx { scale 1 tile 819 } 
+voxel button1a.kvx { scale 1 tile 567 } 
+voxel button1b.kvx { scale 1 tile 568 } 
+voxel switch1a.kvx { scale 1 tile 583 } 
+voxel switch1b.kvx { scale 1 tile 584 } 
+voxel switch2a.kvx { scale 1 tile 571 } 
+voxel switch2b.kvx { scale 1 tile 572 } 
+voxel switch3a.kvx { scale 1 tile 563 } 
+voxel switch3b.kvx { scale 1 tile 564 } 
+voxel switch4a.kvx { scale 1 tile 573 } 
+voxel switch4b.kvx { scale 1 tile 574 } 
+voxel switch5a.kvx { scale 1 tile 565 } 
+voxel switch5b.kvx { scale 1 tile 566 } 

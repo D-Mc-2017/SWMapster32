@@ -2492,7 +2492,7 @@ badindex:
                         Bstrcpy(ScriptQuotes[i], boardfilename);
                         break;
                     case STR_VERSION:
-                        Bstrcpy(ScriptQuotes[i], "Mapster32"VERSION BUILDDATE);
+                        Bstrcpy(ScriptQuotes[i], "SWMapster32"VERSION BUILDDATE);
                         break;
                     default:
                         M32_PRINTERROR("unknown str ID %d %d", i,j);

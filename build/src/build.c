@@ -5,12 +5,20 @@
 // This file has been modified from Ken Silverman's original release
 // by Jonathon Fowler (jonof@edgenetwk.com)
 
+// This file has been modified in part for SWMapster32 // dmc2017
+
+
+
 #include "build.h"
 #include "compat.h"
 #include "pragmas.h"
 #include "osd.h"
 #include "cache1d.h"
 #include "editor.h"
+
+#include "tags.h" // dmc2017
+#include "macros.h" // dmc2017
+
 
 #include "baselayer.h"
 #ifdef RENDERTYPEWIN
@@ -371,7 +379,7 @@ int32_t app_main(int32_t argc, const char **argv)
     OSD_RegisterFunction("vidmode","vidmode <xdim> <ydim> <bpp> <fullscreen>: immediately change the video mode",osdcmd_vidmode);
 #endif
 
-    wm_setapptitle("Mapster32");
+    wm_setapptitle("SWMapster32");
 
     editstatus = 1;
     newaspect_enable = 1;
@@ -391,8 +399,8 @@ int32_t app_main(int32_t argc, const char **argv)
             else if (!Bstrcmp(argv[i], "-help") || !Bstrcmp(argv[i], "--help") || !Bstrcmp(argv[i], "-?"))
             {
                 char *s =
-                    "Mapster32\n"
-                    "Syntax: mapster32 [options] mapname\n"
+                    "SWMapster32\n"
+                    "Syntax: swmapster32 [options] mapname\n"
                     "Options:\n"
                     "\t-grp\tUse an extra GRP or ZIP file.\n"
                     "\t-g\tSame as above.\n"
@@ -401,7 +409,7 @@ int32_t app_main(int32_t argc, const char **argv)
 #endif
                     ;
 #if defined RENDERTYPEWIN || (defined RENDERTYPESDL && !defined __APPLE__ && defined HAVE_GTK2)
-                wm_msgbox("Mapster32","%s",s);
+                wm_msgbox("SWMapster32","%s",s);
 #else
                 puts(s);
 #endif
@@ -2040,12 +2048,12 @@ void overheadeditor(void)
                                 {
                                     int32_t blocking = (sprite[i].cstat&1);
 
-                                    col = 3 + 2*blocking;
+                                    col = 3 + 2*blocking; // ed col [3or5]
                                     if (spritecol2d[sprite[i].picnum][blocking])
                                         col = spritecol2d[sprite[i].picnum][blocking];
 
                                     if ((i == pointhighlight-16384) && (totalclock & 32))
-                                        col += (2<<2);
+                                        col += (2<<2); // [+8=11or13] if highlighted
 
                                     printext16(x1,y1,editorcolors[0],editorcolors[col],dabuffer,1);
 
@@ -2091,7 +2099,7 @@ void overheadeditor(void)
                 printext16(searchx+6-i,searchy+6-j,editorcolors[11],-1,tempbuf,0);
 #endif
             }
-            drawline16(searchx,0, searchx,8, editorcolors[15]);
+            drawline16(searchx,0, searchx,8, editorcolors[15]); 
             drawline16(0,searchy, 8,searchy, editorcolors[15]);
 
             ////// draw mouse pointer
@@ -3604,12 +3612,344 @@ SKIP:
         }
 
 // PK
-        for (i=0x02; i<=0x0b; i++)  // keys '1' to '0' on the upper row
-            if (keystatus[i])
+//        for (i=0x02; i<=0x0b; i++)  // keys '1' to '0' on the upper row
+//            if (keystatus[i])
+//            {
+//                prefixarg = prefixtiles[i-2];
+//                break;
+//            }
+    if (keystatus[0x28]) // quote
+    {
+        if (keystatus[0x02]) // 1
+        {
+            pointhighlight = getpointhighlight(mousxplc, mousyplc, pointhighlight);
+            if (pointhighlight >= 16384) // sprite
             {
-                prefixarg = prefixtiles[i-2];
-                break;
+                if (eitherSHIFT)
+                {   
+                    i = pointhighlight-16384;
+                    Bsprintf(buffer, "Sprite (%d) tag 11 (shade): ", i);
+                    SPRITE_TAG11(i) = getnumber16(buffer, SPRITE_TAG11(i), 65536L, 0);
+                }
+                else
+                {   
+                    i = pointhighlight-16384;
+                    Bsprintf(buffer, "Sprite (%d) tag 1 (hitag): ", i);
+                    SPRITE_TAG1(i) = getnumber16(buffer, SPRITE_TAG1(i), 65536L, 0);
+                }
             }
+        }
+        if (keystatus[0x03]) // 2
+        {
+            pointhighlight = getpointhighlight(mousxplc, mousyplc, pointhighlight);
+            if (pointhighlight >= 16384) // sprite
+            {
+                if (eitherSHIFT)
+                {   
+                    i = pointhighlight-16384;
+                    Bsprintf(buffer, "Sprite (%d) tag 12 (pal): ", i);
+                    SPRITE_TAG12(i) = getnumber16(buffer, SPRITE_TAG12(i), 65536L, 0);
+                }
+                else
+                {   
+                    i = pointhighlight-16384;
+                    Bsprintf(buffer, "Sprite (%d) tag 2 (lotag): ", i);
+                    SPRITE_TAG2(i) = getnumber16(buffer, SPRITE_TAG2(i), 65536L, 0);
+                }
+            }
+        }        
+        
+        if (keystatus[0x04]) // 3
+        {
+            pointhighlight = getpointhighlight(mousxplc, mousyplc, pointhighlight);
+            if (pointhighlight >= 16384) // sprite
+            {
+                if (eitherSHIFT)
+                {   
+                    i = pointhighlight-16384;
+                    Bsprintf(buffer, "Sprite (%d) tag 13 (xoffset/yoffset): ", i);
+                    j = getnumber16(buffer, SPRITE_TAG13(i), 65536L, 0);
+                    SET_SPRITE_TAG13(i, j);
+                }
+                else
+                {   
+                    i = pointhighlight-16384;
+                    Bsprintf(buffer, "Sprite (%d) tag 3 (clipdist) : ", i);
+                    SPRITE_TAG3(i) = getnumber16(buffer, SPRITE_TAG3(i), 65536L, 0);
+                }
+            }
+        }    
+        
+        if (keystatus[0x05]) // 4
+        {
+            pointhighlight = getpointhighlight(mousxplc, mousyplc, pointhighlight);
+            if (pointhighlight >= 16384) // sprite
+            {
+                if (eitherSHIFT)
+                {   
+                    i = pointhighlight-16384;
+                    Bsprintf(buffer, "Sprite (%d) tag 14 (xrepeat/yrepeat): ", i);
+                    j = getnumber16(buffer, SPRITE_TAG14(i), 65536L, 0);
+                    SET_SPRITE_TAG14(i, j);
+                }
+                else
+                {   
+                    i = pointhighlight-16384;
+                    Bsprintf(buffer, "Sprite (%d) tag 4 (ang) : ", i);
+                    SPRITE_TAG4(i) = getnumber16(buffer, SPRITE_TAG4(i), 65536L, 0);
+                }
+            }
+        }    
+        
+        if (keystatus[0x06]) // 5
+        {
+            pointhighlight = getpointhighlight(mousxplc, mousyplc, pointhighlight);
+            if (pointhighlight >= 16384) // sprite
+            {
+                if (eitherSHIFT)
+                {   
+                    i = pointhighlight-16384;
+                    Bsprintf(buffer, "Sprite (%d) tag 15 (z): ", i);
+                    SPRITE_TAG15(i) = getnumber16(buffer, SPRITE_TAG15(i), 65536L, 0);
+                }
+                else
+                {   
+                    i = pointhighlight-16384;
+                    Bsprintf(buffer, "Sprite (%d) tag 5 (xvel) : ", i);
+                    SPRITE_TAG5(i) = getnumber16(buffer, SPRITE_TAG5(i), 65536L, 0);
+                }
+            }
+        }    
+        if (keystatus[0x07]) // 6
+        {
+            pointhighlight = getpointhighlight(mousxplc, mousyplc, pointhighlight);
+            if (pointhighlight >= 16384) // sprite
+            {
+                i = pointhighlight-16384;
+                Bsprintf(buffer, "Sprite (%d) tag 6 (yvel) : ", i);
+                SPRITE_TAG6(i) = getnumber16(buffer, SPRITE_TAG6(i), 65536L, 0);
+            }
+        }   
+        if (keystatus[0x08]) // 7
+        {
+            pointhighlight = getpointhighlight(mousxplc, mousyplc, pointhighlight);
+            if (pointhighlight >= 16384) // sprite
+            {
+                i = pointhighlight-16384;
+                Bsprintf(buffer, "Sprite (%d) tag 7 (zvel 1) <0-255> : ", i);
+                SPRITE_TAG7(i) = getnumber16(buffer, SPRITE_TAG7(i), 65536L, 0);
+            }
+        }  
+        if (keystatus[0x09]) // 8
+        {
+            pointhighlight = getpointhighlight(mousxplc, mousyplc, pointhighlight);
+            if (pointhighlight >= 16384) // sprite
+            {
+                i = pointhighlight-16384;
+                Bsprintf(buffer, "Sprite (%d) tag 8 (zvel 2) <0-255> : ", i);
+                SPRITE_TAG8(i) = getnumber16(buffer, SPRITE_TAG8(i), 65536L, 0);
+            }
+        }  
+        if (keystatus[0x0a]) // 9
+        {
+            pointhighlight = getpointhighlight(mousxplc, mousyplc, pointhighlight);
+            if (pointhighlight >= 16384) // sprite
+            {
+                i = pointhighlight-16384;
+                Bsprintf(buffer, "Sprite (%d) tag 9 (owner 1) <0-255> : ", i);
+                SPRITE_TAG9(i) = getnumber16(buffer, SPRITE_TAG9(i), 65536L, 0);
+            }
+        }  
+        if (keystatus[0x0b]) // 0 (10)
+        {
+            pointhighlight = getpointhighlight(mousxplc, mousyplc, pointhighlight);
+            if (pointhighlight >= 16384) // sprite
+            {
+                i = pointhighlight-16384;
+                Bsprintf(buffer, "Sprite (%d) tag 10 (owner 2) <0-255> : ", i);
+                SPRITE_TAG10(i) = getnumber16(buffer, SPRITE_TAG10(i), 65536L, 0);
+            }
+        }  
+    }
+    
+    int value;
+    if (keystatus[0x27]) // semi
+    {
+        if (keystatus[0x02]) // 1
+        {
+            pointhighlight = getpointhighlight(mousxplc, mousyplc, pointhighlight);
+            if (pointhighlight >= 16384) // sprite
+            {
+                i = pointhighlight-16384;
+                SPRITEp sp = &sprite[i];
+                if (eitherSHIFT)
+                {   
+                    Bsprintf(buffer, "Sprite (%d) Boolean tag 11 (0 or 1): ", i);
+                    value = !!TEST_BOOL11(sp);
+                    value = getnumber16(buffer, value, 131072, 1);            
+                    if (value)
+                        SET_BOOL11(sp);
+                    else
+                        RESET_BOOL11(sp);
+                }
+                else
+                {   
+                    Bsprintf(buffer, "Sprite (%d) Boolean tag 1 (0 or 1): ", i);
+                    value = !!TEST_BOOL1(sp);
+                    value = getnumber16(buffer, value, 131072, 1);            
+                    if (value)
+                        SET_BOOL1(sp);
+                    else
+                        RESET_BOOL1(sp);
+                }
+            }
+        }
+        if (keystatus[0x03]) // 2
+        {
+            pointhighlight = getpointhighlight(mousxplc, mousyplc, pointhighlight);
+            if (pointhighlight >= 16384) // sprite
+            {
+                i = pointhighlight-16384;
+                SPRITEp sp = &sprite[i];
+                Bsprintf(buffer, "Sprite (%d) Boolean tag 2 (0 or 1): ", i);
+                value = !!TEST_BOOL2(sp);
+                value = getnumber16(buffer, value, 131072, 1);            
+                if (value)
+                    SET_BOOL2(sp);
+                else
+                    RESET_BOOL2(sp);
+            }
+        }
+        if (keystatus[0x04]) // 3
+        {
+            pointhighlight = getpointhighlight(mousxplc, mousyplc, pointhighlight);
+            if (pointhighlight >= 16384) // sprite
+            {
+                i = pointhighlight-16384;
+                SPRITEp sp = &sprite[i];
+                Bsprintf(buffer, "Sprite (%d) Boolean tag 3 (0 or 1): ", i);
+                value = !!TEST_BOOL3(sp);
+                value = getnumber16(buffer, value, 131072, 1);            
+                if (value)
+                    SET_BOOL3(sp);
+                else
+                    RESET_BOOL3(sp);
+            }
+        }
+        if (keystatus[0x05]) // 4
+        {
+            pointhighlight = getpointhighlight(mousxplc, mousyplc, pointhighlight);
+            if (pointhighlight >= 16384) // sprite
+            {
+                i = pointhighlight-16384;
+                SPRITEp sp = &sprite[i];
+                Bsprintf(buffer, "Sprite (%d) Boolean tag 4 (0 or 1): ", i);
+                value = !!TEST_BOOL4(sp);
+                value = getnumber16(buffer, value, 131072, 1);            
+                if (value)
+                    SET_BOOL4(sp);
+                else
+                    RESET_BOOL4(sp);
+            }
+        }
+        if (keystatus[0x06]) // 5
+        {
+            pointhighlight = getpointhighlight(mousxplc, mousyplc, pointhighlight);
+            if (pointhighlight >= 16384) // sprite
+            {
+                i = pointhighlight-16384;
+                SPRITEp sp = &sprite[i];
+                Bsprintf(buffer, "Sprite (%d) Boolean tag 5 (0 or 1): ", i);
+                value = !!TEST_BOOL5(sp);
+                value = getnumber16(buffer, value, 131072, 1);            
+                if (value)
+                    SET_BOOL5(sp);
+                else
+                    RESET_BOOL5(sp);
+            }
+        }
+        if (keystatus[0x07]) // 6
+        {
+            pointhighlight = getpointhighlight(mousxplc, mousyplc, pointhighlight);
+            if (pointhighlight >= 16384) // sprite
+            {
+                i = pointhighlight-16384;
+                SPRITEp sp = &sprite[i];
+                Bsprintf(buffer, "Sprite (%d) Boolean tag 6 (0 or 1): ", i);
+                value = !!TEST_BOOL6(sp);
+                value = getnumber16(buffer, value, 131072, 1);            
+                if (value)
+                    SET_BOOL6(sp);
+                else
+                    RESET_BOOL6(sp);
+            }
+        }
+        if (keystatus[0x08]) // 7
+        {
+            pointhighlight = getpointhighlight(mousxplc, mousyplc, pointhighlight);
+            if (pointhighlight >= 16384) // sprite
+            {
+                i = pointhighlight-16384;
+                SPRITEp sp = &sprite[i];
+                Bsprintf(buffer, "Sprite (%d) Boolean tag 7 (0 or 1): ", i);
+                value = !!TEST_BOOL7(sp);
+                value = getnumber16(buffer, value, 131072, 1);            
+                if (value)
+                    SET_BOOL7(sp);
+                else
+                    RESET_BOOL7(sp);
+            }
+        }
+        if (keystatus[0x09]) // 8
+        {
+            pointhighlight = getpointhighlight(mousxplc, mousyplc, pointhighlight);
+            if (pointhighlight >= 16384) // sprite
+            {
+                i = pointhighlight-16384;
+                SPRITEp sp = &sprite[i];
+                Bsprintf(buffer, "Sprite (%d) Boolean tag 8 (0 or 1): ", i);
+                value = !!TEST_BOOL8(sp);
+                value = getnumber16(buffer, value, 131072, 1);            
+                if (value)
+                    SET_BOOL8(sp);
+                else
+                    RESET_BOOL8(sp);
+            }
+        }
+        if (keystatus[0x0a]) // 9
+        {
+            pointhighlight = getpointhighlight(mousxplc, mousyplc, pointhighlight);
+            if (pointhighlight >= 16384) // sprite
+            {
+                i = pointhighlight-16384;
+                SPRITEp sp = &sprite[i];
+                Bsprintf(buffer, "Sprite (%d) Boolean tag 9 (0 or 1): ", i);
+                value = !!TEST_BOOL9(sp);
+                value = getnumber16(buffer, value, 131072, 1);            
+                if (value)
+                    SET_BOOL9(sp);
+                else
+                    RESET_BOOL9(sp);
+            }
+        }
+        if (keystatus[0x0b]) // 10
+        {
+            pointhighlight = getpointhighlight(mousxplc, mousyplc, pointhighlight);
+            if (pointhighlight >= 16384) // sprite
+            {
+                i = pointhighlight-16384;
+                SPRITEp sp = &sprite[i];
+                Bsprintf(buffer, "Sprite (%d) Boolean tag 10 (0 or 1): ", i);
+                value = !!TEST_BOOL10(sp);
+                value = getnumber16(buffer, value, 131072, 1);            
+                if (value)
+                    SET_BOOL10(sp);
+                else
+                    RESET_BOOL10(sp);
+            }
+        }
+    }
+
 
         if (eitherALT && keystatus[0x1f]) //ALT-S
         {
@@ -4938,7 +5278,7 @@ CANCEL:
                         if (f)
                             printmessage16("Saved board to %s.", f);
                         else
-                            printmessage16("Saving board failed.");
+                            printmessage16("Saving board failed.1");
 
                         Bstrcpy(boardfilename, selectedboardfilename);
                     }
@@ -4962,7 +5302,7 @@ CANCEL:
                     if (f)
                         printmessage16("Saved board to %s.", f);
                     else
-                        printmessage16("Saving board failed.");
+                        printmessage16("Saving board failed.2");
 
                     showframe(1);
                 }
@@ -5639,7 +5979,7 @@ void clearmidstatbar16(void)
 static void clearministatbar16(void)
 {
     int32_t i, col = whitecol - 21;
-    static const char *tempbuf = "Mapster32" VERSION;
+    static const char *tempbuf = "SWMapster32" VERSION;
 
     begindrawing();
 

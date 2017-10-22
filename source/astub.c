@@ -20,6 +20,24 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 //-------------------------------------------------------------------------
 
+//-------------------------------------------------------------------------
+/*
+Copyright (C) 1996, 2005 - 3D Realms Entertainment
+
+This file is NOT part of Shadow Warrior version 1.2
+However, it is either an older version of a file that is, or is
+some test code written during the development of Shadow Warrior.
+This file is provided purely for educational interest.
+
+Shadow Warrior is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License
+as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+*/
+//-------------------------------------------------------------------------
+
+// This file has been modified in part for SWMapster32 // dmc2017
+
 #include "compat.h"
 #include "build.h"
 #include "editor.h"
@@ -29,6 +47,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "osd.h"
 #include "osdfuncs.h"
 #include "cache1d.h"
+
+#include "tags.h" // dmc2017
+#include "soundnames.h" // dmc2017
 
 #include "mapster32.h"
 #include "keys.h"
@@ -54,13 +75,13 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include <signal.h>
 
-#define BUILDDATE " 20100521"
+#define BUILDDATE " 20171022"
 
 static int32_t floor_over_floor;
 
 // static char *startwin_labeltext = "Starting Mapster32...";
-static char setupfilename[]= "mapster32.cfg";
-static char defaultduke3dgrp[BMAX_PATH] = "duke3d.grp";
+static char setupfilename[]= "SWMapster32.cfg"; 
+static char defaultduke3dgrp[BMAX_PATH] = "sw.grp"; // dmc2017 
 static char *g_grpNamePtr = defaultduke3dgrp;
 static int32_t fixmapbeforesaving = 0;
 static int32_t lastsave = -180*60;
@@ -71,7 +92,7 @@ static char default_tiles_cfg[] = "tiles.cfg";
 static int32_t pathsearchmode_oninit;
 
 // Sound in Mapster32
-static char defaultgamecon[] = "game.con";
+static char defaultgamecon[] = "SWMapster32.con";
 static char *gamecon = defaultgamecon;
 
 #pragma pack(push,1)
@@ -533,7 +554,7 @@ static const char *SPRDSPMODE[MAXNOSPRITES]=
 #define MAXHELP3D (int32_t)(sizeof(Help3d)/sizeof(Help3d[0]))
 static const char *Help3d[]=
 {
-    "Mapster32 3D mode help",
+    "SWMapster32 3D mode help",
     " ",
     " F1 = TOGGLE THIS HELP DISPLAY",
     " F2 = TOGGLE CLIPBOARD",
@@ -595,6 +616,7 @@ void ExtLoadMap(const char *mapname)
 {
     int32_t i;
     int32_t sky=0;
+	
 
     getmessageleng = 0;
     getmessagetimeoff = 0;
@@ -603,6 +625,7 @@ void ExtLoadMap(const char *mapname)
     pskyoff[0]=0;
     for (i=0; i<8; i++) pskyoff[i]=0;
 
+    /*/ // removed NAMES.H 10-16-17 // dmc2017
     for (i=0; i<numsectors; i++)
     {
         switch (sector[i].ceilingpicnum)
@@ -645,10 +668,11 @@ void ExtLoadMap(const char *mapname)
         pskyoff[7]=3;
         break;
     }
+    /*/ // removed NAMES.H 10-16-17 // dmc2017
 
     pskybits=3;
     parallaxtype=0;
-    Bsprintf(tempbuf, "Mapster32 - %s",mapname);
+    Bsprintf(tempbuf, "SWMapster32 - %s",mapname);
 
     map_undoredo_free();
     wm_setapptitle(tempbuf);
@@ -819,70 +843,325 @@ const char *ExtGetWallCaption(int16_t wallnum)
     return(tempbuf);
 } //end
 
-const char *SectorEffectorTagText(int32_t lotag)
+const char *SectorEffectorTagText(int32_t hitag) // dmc2017
 {
     static char tempbuf[64];
 
     static const char *tags[] =
     {
-        "ROTATED SECTOR",                // 0
-        "PIVOT SPRITE FOR SE 0",
-        "EARTHQUAKE",
-        "RANDOM LIGHTS AFTER SHOT OUT",
-        "RANDOM LIGHTS",
-        "(UNKNOWN)",                     // 5
-        "SUBWAY",
-        "TRANSPORT",
-        "UP OPEN DOOR LIGHTS",
-        "DOWN OPEN DOOR LIGHTS",
-        "DOOR AUTO CLOSE (H=DELAY)",     // 10
-        "ROTATE SECTOR DOOR",
-        "LIGHT SWITCH",
-        "EXPLOSIVE",
-        "SUBWAY CAR",
-        "SLIDE DOOR (ST 25)",            // 15
-        "ROTATE REACTOR SECTOR",
-        "ELEVATOR TRANSPORT (ST 15)",
-        "INCREMENTAL SECTOR RISE/FALL",
-        "CEILING FALL ON EXPLOSION",
-        "BRIDGE (ST 27)",                // 20
-        "DROP FLOOR (ST 28)",
-        "TEETH DOOR (ST 29)",
-        "1-WAY SE7 DESTINATION (H=SE 7)",
-        "CONVAYER BELT",
-        "ENGINE",                        // 25
-        "(UNKNOWN)",
-        "LIGHTNING (H= TILE#4890)",
-        "CAMERA FOR PLAYBACK",
-        "FLOAT",
-        "2 WAY TRAIN (ST=31)",           // 30
-        "FLOOR RISE",
-        "CEILING FALL",
-        "SPAWN JIB W/QUAKE",
+        "SECT_SINK",
+        "SECT_OPERATIONAL",
+        "ST1",
+        "SECT_CURRENT",
+        "ST1",
+        "SECT_NO_RIDE",
+        "ST1",
+        "SECT_DIVE_AREA",
+        "SECT_UNDERWATER",
+        "SECT_UNDERWATER2",
+        "ST1",
+        "ST1",
+        "ST1",
+        "ST1",
+        "ST1",
+        "ST1",
+        "SO_ANGLE",
+        "ST1",
+        "ST1",
+        "SECT_FLOOR_PAN",
+        "ST1",
+        "SECT_CEILING_PAN",
+        "ST1",
+        "SECT_WALL_PAN_SPEED",
+        "SECT_WALL_PAN_ANG",
+        "SECT_DEBRIS_SEWER",
+        "ST1",
+        "SECT_SO_CENTER",
+        "SECT_MATCH",
+        "SECT_LOCK_DOOR",
+        "SPRI_CLIMB_MARKER",
+        "SECT_SO_SPRITE_OBJ",
+        "SECT_SO_DONT_BOB",
+        "SECT_SO_SINK_DEST",
+        "SECT_SO_DONT_SINK",
+        "ST1",
+        "ST1",
+        "SECT_SO_FORM_WHIRLPOOL",
+        "SECT_ACTOR_BLOCK",
+        "SECT_SO_CLIP_DIST",
+        "ST1",
+        "ST1",
+        "MULTI_PLAYER_START",
+        "FIREBALL_TRAP",
+        "BOLT_TRAP",
+        "SECT_SO_DONT_ROTATE",
+        "PARALLAX_LEVEL",
+        "SECT_DONT_COPY_PALETTE",
+        "MULTI_COOPERATIVE_START",
+        "SO_SET_SPEED",
+        "SO_SPIN",
+        "SO_SPIN_REVERSE",
+        "SO_BOB_START",
+        "SO_BOB_SPEED",
+        "ST1",
+        "SO_TURN_SPEED",
+        "LAVA_ERUPT",
+        "SECT_EXPLODING_CEIL_FLOOR",
+        "SECT_COPY_DEST",
+        "SECT_COPY_SOURCE",
+        "ST1",
+        "ST1",
+        "SO_SHOOT_POINT",
+        "SPEAR_TRAP",
+        "SO_SYNC1",
+        "SO_SYNC2",
+        "DEMO_CAMERA",
+        "SO_LIMIT_TURN",
+        "ST1",
+        "SPAWN_SPOT",
+        "SO_MATCH_EVENT",
+        "SO_SLOPE_FLOOR_TO_POINT",
+        "SO_SLOPE_CEILING_TO_POINT",
+        "SO_TORNADO",
+        "SO_FLOOR_MORPH",
+        "SO_AMOEBA",
+        "SO_MAX_DAMAGE",
+        "SO_RAM_DAMAGE",
+        "SO_CLIP_BOX",
+        "SO_SLIDE",
+        "SO_KILLABLE",
+        "SO_AUTO_TURRET",
+        "SECT_DAMAGE",
+        "ST1",
+        "WARP_TELEPORTER",
+        "WARP_CEILING_PLANE",
+        "WARP_FLOOR_PLANE",
+        "WARP_COPY_SPRITE1",
+        "WARP_COPY_SPRITE2",
+        "ST1",
+        "PLAX_GLOB_Z_ADJUST",
+        "PLAX_Z_ADJUST",
+        "SECT_VATOR",
+        "ST1",
+        "SECT_VATOR_DEST",
+        "ST1",
+        "ST1",
+        "CEILING_Z_ADJUST",
+        "FLOOR_Z_ADJUST",
+        "FLOOR_SLOPE_DONT_DRAW",
+        "SO_SCALE_INFO",
+        "SO_SCALE_POINT_INFO",
+        "SO_SCALE_XY_MULT",
+        "SECT_WALL_MOVE",
+        "SECT_WALL_MOVE_CANSEE",
+        "ST1",
+        "SECT_SPIKE",
+        "LIGHTING",
+        "LIGHTING_DIFFUSE",
+        "ST1",
+        "VIEW_LEVEL1",
+        "VIEW_LEVEL2",
+        "VIEW_LEVEL3",
+        "VIEW_LEVEL4",
+        "VIEW_LEVEL5",
+        "VIEW_LEVEL6",
+        "ST1",
+        "ST1",
+        "ST1",
+        "ST1",
+        "VIEW_THRU_CEILING",
+        "VIEW_THRU_FLOOR",
+        "ST1",
+        "ST1",
+        "ST1",
+        "ST1",
+        "ST1",
+        "ST1",
+        "ST1",
+        "ST1",
+        "SO_WALL_DONT_MOVE_UPPER",
+        "SO_WALL_DONT_MOVE_LOWER",
+        "BREAKABLE",
+        "QUAKE_SPOT",
+        "SOUND_SPOT",
+        "SLIDE_SECTOR",
+        "CEILING_FLOOR_PIC_OVERRIDE",
+        "ST1",
+        "ST1",
+        "ST1",
+        "TRIGGER_SECTOR",
+        "DELETE_SPRITE",
+        "ST1",
+        "SECT_ROTATOR",
+        "SECT_ROTATOR_PIVOT",
+        "SECT_SLIDOR",
+        "SECT_CHANGOR",
+        "SO_DRIVABLE_ATTRIB",
+        "WALL_DONT_STICK",
+        "SPAWN_ITEMS",
+        "STOP_SOUND_SPOT",
     };
 
     Bmemset(tempbuf,0,sizeof(tempbuf));
 
-    if (lotag>=0 && lotag<(int32_t)(sizeof(tags)/sizeof(tags[0])))
-        Bsprintf(tempbuf, "%d: %s", lotag, tags[lotag]);
+    if (hitag>=0 && hitag<(int32_t)(sizeof(tags)/sizeof(tags[0])))
+        // Bsprintf(tempbuf, "%d: %s", hitag, tags[hitag]);
+        Bsprintf(tempbuf, "%s", tags[hitag]);
     else
-        switch (lotag)
+/*
+BOUND_FLOOR_UPPER,           200
+BOUND_FLOOR_LOWER,           201
+BOUND_FLOOR_BASE_OFFSET,     202
+BOUND_FLOOR_OFFSET,          203
+
+BOUND_SO_UPPER0,             500
+BOUND_SO_LOWER0,             501
+BOUND_SO_UPPER1,             505
+BOUND_SO_LOWER1,             506
+BOUND_SO_UPPER2,             510
+BOUND_SO_LOWER2,             511
+BOUND_SO_UPPER3,             515
+BOUND_SO_LOWER3,             516
+BOUND_SO_UPPER4,             520
+BOUND_SO_LOWER4,             521
+BOUND_SO_UPPER5,             525
+BOUND_SO_LOWER5,             526
+BOUND_SO_UPPER6,             530
+BOUND_SO_LOWER6,             531
+BOUND_SO_UPPER7,             535
+BOUND_SO_LOWER7,             536
+BOUND_SO_UPPER8,             540
+BOUND_SO_LOWER8,             541
+BOUND_SO_UPPER9,             545
+BOUND_SO_LOWER9,             546
+BOUND_SO_UPPER10,            550
+BOUND_SO_LOWER10,            551
+BOUND_SO_UPPER11,            555
+BOUND_SO_LOWER11,            556
+BOUND_SO_UPPER12,            560
+BOUND_SO_LOWER12,            561
+BOUND_SO_UPPER13,            565
+BOUND_SO_LOWER13,            566
+BOUND_SO_UPPER14,            570
+BOUND_SO_LOWER14,            571
+BOUND_SO_UPPER15,            575
+BOUND_SO_LOWER15,            576
+BOUND_SO_UPPER16,            580
+BOUND_SO_LOWER16,            581
+BOUND_SO_UPPER17,            585
+BOUND_SO_LOWER17,            586
+BOUND_SO_UPPER18,            590
+BOUND_SO_LOWER18,            591
+BOUND_SO_UPPER19,            595
+BOUND_SO_LOWER19,            596
+TV_CAMERA,                  1000
+AMBIENT,                    1002
+ECHOSPOT,                   1005
+DRIP_GENERATOR,             1006
+*/
+        switch (hitag)
         {
-        case 36:
-            Bsprintf(tempbuf,"%d: SKRINK RAY SHOOTER",lotag);
+        case 200:
+            Bsprintf(tempbuf,"BOUND_FLOOR_UPPER");
             break;
-        case 49:
-            Bsprintf(tempbuf,"%d: POINT LIGHT",lotag);
+        case 1002:
+            Bsprintf(tempbuf,"AMBIENT");
             break;
-        case 50:
-            Bsprintf(tempbuf,"%d: SPOTLIGHT",lotag);
+        case 1005:
+            Bsprintf(tempbuf,"ECHOSPOT");
             break;
         default:
-            Bsprintf(tempbuf,"%d: (UNKNOWN)",lotag);
+            Bsprintf(tempbuf,"ST1");
             break;
         }
 
     return (tempbuf);
+}
+
+static int SNUM(int lotag) // sound num swapping for ambient tags // dmc2017
+{
+    int snum;
+    
+    switch (lotag)
+    {
+        case 0: snum = DIGI_BUBBLES; break;
+        case 1: snum = DIGI_CRICKETS; break; 
+        case 2: snum = DIGI_CAVEDRIP1; break; 
+        case 3: snum = DIGI_CAVEDRIP2; break; 
+        case 4: snum = DIGI_DRIP; break; 
+        case 5: snum = DIGI_WATERFALL1; break; 
+        case 6: snum = DIGI_WATERFALL2; break; 
+        case 7: snum = DIGI_WATERFLOW1; break; 
+        case 8: snum = DIGI_WATERFLOW2; break; 
+        case 9: snum = DIGI_FIRE1; break; 
+        case 10: snum = DIGI_FIRE2; break; 
+        case 11: snum = DIGI_GONG; break; 
+        case 12: snum = DIGI_LAVAFLOW1; break; 
+        case 13: snum = DIGI_MUBBUBBLES1; break; 
+        case 14: snum = DIGI_EARTHQUAKE; break; 
+        case 15: snum = DIGI_SEWERFLOW1; break; 
+        case 16: snum = DIGI_STEAM1; break;
+        case 17: snum = DIGI_VOLCANOSTEAM1; break; 
+        case 18: snum = DIGI_SWAMP; break; 
+        case 19: snum = DIGI_THUNDER; break; 
+        case 20: snum = DIGI_UNDERWATER; break; 
+        case 21: snum = DIGI_VOID1; break; 
+        case 22: snum = DIGI_VOID2; break; 
+        case 23: snum = DIGI_VOID3; break; 
+        case 24: snum = DIGI_VOID4; break; 
+        case 25: snum = DIGI_VOID5; break; 
+        case 26: snum = DIGI_ERUPTION; break; 
+        case 27: snum = DIGI_VOLCANOPROJECTILE; break; 
+        case 28: snum = DIGI_LIGHTWIND; break; 
+        case 29: snum = DIGI_STRONGWIND; break; 
+        case 30: snum = DIGI_BREAKINGWOOD; break; 
+        case 31: snum = DIGI_BREAKSTONES; break; 
+        case 40: snum = DIGI_BOMBRFLYING; break; 
+        case 41: snum = DIGI_BOMBRDROPBOMB; break; 
+        case 42: snum = DIGI_DRILL; break;
+        case 43: snum = DIGI_GEAR1; break;
+        case 44: snum = DIGI_MACHINE1; break; 
+        case 45: snum = DIGI_ENGROOM1; break; 
+        case 46: snum = DIGI_ENGROOM2; break; 
+        case 47: snum = DIGI_ENGROOM3; break; 
+        case 48: snum = DIGI_ENGROOM4; break; 
+        case 49: snum = DIGI_ENGROOM5; break; 
+        case 50: snum = DIGI_HELI; break; 
+        case 51: snum = DIGI_BIGHART; break; 
+        case 52: snum = DIGI_WIND4; break; 
+        case 53: snum = DIGI_SPOOKY1; break; 
+        case 54: snum = DIGI_JET; break; 
+        case 55: snum = DIGI_DRUMCHANT; break; 
+        case 56: snum = DIGI_ASIREN1; break; 
+        case 57: snum = DIGI_FIRETRK1; break; 
+        case 58: snum = DIGI_TRAFFIC1; break; 
+        case 59: snum = DIGI_TRAFFIC2; break; 
+        case 60: snum = DIGI_TRAFFIC3; break; 
+        case 61: snum = DIGI_TRAFFIC4; break; 
+        case 62: snum = DIGI_TRAFFIC5; break; 
+        case 63: snum = DIGI_TRAFFIC6; break; 
+        case 64: snum = DIGI_HELI1; break; 
+        case 65: snum = DIGI_JET1; break;
+        case 66: snum = DIGI_MOTO1; break; 
+        case 67: snum = DIGI_MOTO2; break; 
+        case 68: snum = DIGI_NEON1; break;
+        case 69: snum = DIGI_SUBWAY; break; 
+        case 70: snum = DIGI_TRAIN1; break; 
+        case 71: snum = DIGI_BIRDS1; break; 
+        case 72: snum = DIGI_BIRDS2; break; 
+        case 73: snum = DIGI_AMOEBA; break; 
+        case 74: snum = DIGI_TRAIN3; break; 
+        case 75: snum = DIGI_TRAIN8; break; 
+        case 76: snum = DIGI_WHIPME; break; 
+        case 77: snum = DIGI_FLAGWAVE; break; 
+        case 78: snum = DIGI_ANIMECRY; break; 
+        case 79: snum = DIGI_WINDCHIMES; break; 
+        case 80: snum = DIGI_BOATCREAK; break; 
+        case 81: snum = DIGI_SHIPBELL; break; 
+        case 82: snum = DIGI_FOGHORN; break; 
+        default: snum = 0; break;
+    }   
+    return snum;
 }
 
 const char *MusicAndSFXTagText(int32_t lotag)
@@ -894,8 +1173,11 @@ const char *MusicAndSFXTagText(int32_t lotag)
     if (g_numsounds <= 0)
         return tempbuf;
 
-    if (lotag>0 && lotag<999 && g_sounds[lotag].definedname)
-        return g_sounds[lotag].definedname;
+    if (lotag>0 && lotag<83) // && g_sounds[lotag].definedname)
+        {
+            lotag = SNUM(lotag);
+            return g_sounds[lotag].definedname;        
+        }
 
     if (lotag>=1000 && lotag<2000)
         Bsprintf(tempbuf, "REVERB");
@@ -909,11 +1191,11 @@ const char *SectorEffectorText(int32_t spritenum)
     Bmemset(tempbuf, 0, sizeof(tempbuf));
     Bmemset(lo, 0, sizeof(lo));
 
-    Bstrcpy(lo, SectorEffectorTagText(sprite[spritenum].lotag));
+    Bstrcpy(lo, SectorEffectorTagText(sprite[spritenum].hitag)); // dmc2017
     if (!lo[5]) // tags are 5 chars or less
         SpriteName(spritenum, tempbuf);
     else
-        Bsprintf(tempbuf, "SE %s",lo);
+        Bsprintf(tempbuf, "%s",lo);
 
     return (tempbuf);
 }
@@ -925,7 +1207,7 @@ const char *ExtGetSpriteCaption(int16_t spritenum)
 
     Bmemset(tempbuf,0,sizeof(tempbuf));
 
-    if (!(onnames>=3 && onnames<=8) || (onnames==7 && sprite[spritenum].picnum!=SECTOREFFECTOR))
+    if (!(onnames>=3 && onnames<=8) || (onnames==7 && sprite[spritenum].picnum!=ST1)) // dmc2017
         retfast = 1;
     if (onnames==5 && !tileInGroup(tilegroupItems, sprite[spritenum].picnum))
         retfast = 1;
@@ -940,16 +1222,25 @@ const char *ExtGetSpriteCaption(int16_t spritenum)
         SpriteName(spritenum,lo);
         if (lo[0]!=0)
         {
-            if (sprite[spritenum].pal==1) Bsprintf(tempbuf,"%s (MULTIPLAYER)",lo);
-            else Bsprintf(tempbuf,"%s",lo);
+            // if (sprite[spritenum].pal==1) Bsprintf(tempbuf,"%s (MULTIPLAYER)",lo);
+            // else Bsprintf(tempbuf,"%s",lo);
+            Bsprintf(tempbuf,"%s",lo);
         }
     }
-    else if (sprite[spritenum].picnum==SECTOREFFECTOR)
+//    else if (sprite[spritenum].picnum==SECTOREFFECTOR)
+//    {
+//        if (onnames!=8)
+//        {
+//            Bsprintf(lo,"%s",SectorEffectorText(spritenum));
+//            Bsprintf(tempbuf,"%s, %hu",lo,sprite[spritenum].hitag);
+//        }
+//    }
+    else if (sprite[spritenum].picnum==ST1) // dmc2017
     {
         if (onnames!=8)
         {
             Bsprintf(lo,"%s",SectorEffectorText(spritenum));
-            Bsprintf(tempbuf,"%s, %hu",lo,sprite[spritenum].hitag);
+            Bsprintf(tempbuf,"%s",lo);
         }
     }
     else
@@ -1007,7 +1298,7 @@ void ExtShowSectorData(int16_t sectnum)   //F5
             if (sprite[i].lotag<=3) totalactors3++;
             if (sprite[i].lotag<=4) totalactors4++;
         }
-        if (sprite[i].picnum == RESPAWN) totalrespawn++;
+        // if (sprite[i].picnum == RESPAWN) totalrespawn++;  // dmc2017
 
         i = nextspritestat[i];
     }
@@ -1046,19 +1337,22 @@ void ExtShowSectorData(int16_t sectnum)   //F5
     begindrawing();
     printext16(x*8, ydim-STATUS2DSIZ+y*8, editorcolors[11], -1, "Item Count", 0);
     enddrawing();
-
+    
+    /*/ // removed NAMES.H 10-16-17 // dmc2017
     PRSTAT("10%health=", COLA);
     PRSTAT("30%health=", SIXPAK);
     PRSTAT("Med-Kit  =", FIRSTAID);
     PRSTAT("Atom     =", ATOMICHEALTH);
     PRSTAT("Shields  =", SHIELD);
-
+    /*/ // removed NAMES.H 10-16-17 // dmc2017
+    
     x=17; x2=30;
     y=4; yi=2;
     begindrawing();
     printext16(x*8, ydim-STATUS2DSIZ+y*8, editorcolors[11], -1, "Inventory", 0);
     enddrawing();
 
+    /*/ // removed NAMES.H 10-16-17 // dmc2017
     PRSTAT("Steroids =", STEROIDS);
     PRSTAT("Airtank  =", AIRTANK);
     PRSTAT("Jetpack  =", JETPACK);
@@ -1066,6 +1360,7 @@ void ExtShowSectorData(int16_t sectnum)   //F5
     PRSTAT("Boots    =", BOOTS);
     PRSTAT("HoloDuke =", HOLODUKE);
     PRSTAT("Multi D  =", APLAYER);
+    /*/ // removed NAMES.H 10-16-17 // dmc2017
 
     x=33; x2=46;
     y=4; yi=2;
@@ -1073,6 +1368,7 @@ void ExtShowSectorData(int16_t sectnum)   //F5
     printext16(x*8, ydim-STATUS2DSIZ+y*8, editorcolors[11], -1, "Weapon Count", 0);
     enddrawing();
 
+    /*/ // removed NAMES.H 10-16-17 // dmc2017
     PRSTAT("Pistol   =", FIRSTGUNSPRITE);
     PRSTAT("Shotgun  =", SHOTGUNSPRITE);
     PRSTAT("Chaingun =", CHAINGUNSPRITE);
@@ -1082,6 +1378,7 @@ void ExtShowSectorData(int16_t sectnum)   //F5
     PRSTAT("Devastatr=", DEVISTATORSPRITE);
     PRSTAT("Trip mine=", TRIPBOMBSPRITE);
     PRSTAT("Freezeray=", FREEZESPRITE);
+    /*/ // removed NAMES.H 10-16-17 // dmc2017
 
     x=49; x2=62;
     y=4; yi=2;
@@ -1089,6 +1386,7 @@ void ExtShowSectorData(int16_t sectnum)   //F5
     printext16(x*8,ydim-STATUS2DSIZ+y*8,editorcolors[11],-1,"Ammo Count",0);
     enddrawing();
 
+    /*/ // removed NAMES.H 10-16-17 // dmc2017
     PRSTAT("Pistol   =", AMMO);
     PRSTAT("Shot     =", SHOTGUNAMMO);
     PRSTAT("Chain    =", BATTERYAMMO);
@@ -1098,6 +1396,7 @@ void ExtShowSectorData(int16_t sectnum)   //F5
     PRSTAT("Devastatr=", DEVISTATORAMMO);
     PRSTAT("Expander =", GROWAMMO);
     PRSTAT("Freezeray=", FREEZEAMMO);
+    /*/ // removed NAMES.H 10-16-17 // dmc2017
 
     begindrawing();
     printext16(65*8, ydim-STATUS2DSIZ+4*8, editorcolors[11], -1, "MISC", 0);
@@ -1119,6 +1418,8 @@ void ExtShowSectorData(int16_t sectnum)   //F5
 
 void ExtShowWallData(int16_t wallnum)       //F6
 {
+    /*/ // removed NAMES.H 10-16-17 // dmc2017
+    
     int32_t i, runi, nextfreetag=0, total=0, x, y, yi;
 
     UNREFERENCED_PARAMETER(wallnum);
@@ -1178,6 +1479,7 @@ void ExtShowWallData(int16_t wallnum)       //F6
     printmessage16("Level %s next tag %d", levelname, nextfreetag);
 
 
+    
 #define CASES_LIZTROOP \
     LIZTROOP: case LIZTROOPRUNNING : case LIZTROOPSTAYPUT: case LIZTROOPSHOOT: \
               case LIZTROOPJETPACK: case LIZTROOPONTOILET: case LIZTROOPDUCKING
@@ -1294,6 +1596,7 @@ void ExtShowWallData(int16_t wallnum)       //F6
         PRSTAT("Boss4     =", BOSS4);
 #undef PRSTAT
     }
+    /*/ // removed NAMES.H 10-16-17 // dmc2017
 }// end ExtShowWallData
 
 static void Show2dText(char *name)
@@ -1701,7 +2004,7 @@ ENDFOR1:
                 if (ydim-overridepm16y+28+i*9+32 >= ydim)
                     break;
                 Bmemcpy(disptext[i], helppage[curhp]->line[j], 80);
-                printext16(8, ydim-overridepm16y+28+i*9, editorcolors[10],
+                printext16(8, ydim-overridepm16y+28+i*9, editorcolors[1],  // dmc2017 help page text color
                            (j==highlightline && curhp==highlighthp
                             && totalclock-lasthighlighttime<120*5) ?
                            editorcolors[1] : -1,
@@ -2090,25 +2393,29 @@ static void M32_MoveFX(void)
     int32_t i, j;
     int32_t x, ht;
     spritetype *s;
+    int soundnum;
 
     for (i=headspritestat[0]; i>=0; i=nextspritestat[i])
     {
         s = &sprite[i];
 
-        if (s->picnum != MUSICANDSFX)
+        if (s->picnum != ST1 || s->hitag != 1002)  // dmc2017
         {
             if (T1&1)
             {
                 T1 &= (~1);
-                S_StopEnvSound(s->lotag, i);
+                // S_StopEnvSound(s->lotag, i);  // dmc2017
+                
+                soundnum = SNUM(s->lotag);
+                S_StopEnvSound(soundnum,i);
             }
         }
         else if (s->sectnum>=0)
         {
-            ht = s->hitag;
+            ht = 20000; // s->hitag; volume  // dmc2017
 
-            if (s->lotag < 999 && (unsigned)sector[s->sectnum].lotag < 9 &&
-                    AmbienceToggle && sector[s->sectnum].floorz != sector[s->sectnum].ceilingz)
+            if (s->lotag < 999 && (unsigned)sector[s->sectnum].lotag < 9 && // AmbienceToggle
+                    1 && sector[s->sectnum].floorz != sector[s->sectnum].ceilingz)
             {
                 if ((g_sounds[s->lotag].m&2))
                 {
@@ -2119,23 +2426,28 @@ static void M32_MoveFX(void)
                         {
                             for (j = headspritestat[0]; j >= 0; j = nextspritestat[j])
                             {
-                                if (s->picnum == MUSICANDSFX && j != i && sprite[j].lotag < 999 &&
+                                // AMBIENT SOUNDS 3D MODE // dmc2017
+                                
+                                if (s->picnum == ST1 && s->hitag == 1002 && j != i && sprite[j].lotag < 999 &&
                                         (sprite[j].filler&1) == 1 && dist(&sprite[j],(spritetype *)&pos) > x)
                                 {
-                                    S_StopEnvSound(sprite[j].lotag,j);
+                                    soundnum = SNUM(sprite[j].lotag); // swap ambient sound nums here 
+                                    S_StopEnvSound(soundnum,j);
                                     break;
                                 }
-
+                            
                             }
                             if (j == -1) continue;
                         }
-                        A_PlaySound(s->lotag,i);
+                        soundnum = SNUM(s->lotag); // swap ambient sound nums here 
+                        A_PlaySound(soundnum,i);
                         T1 |= 1;
                     }
                     if (x >= ht && (T1&1) == 1)
                     {
                         T1 &= (~1);
-                        S_StopEnvSound(s->lotag,i);
+                        soundnum = SNUM(s->lotag); // swap ambient sound nums here 
+                        S_StopEnvSound(soundnum,i);
                     }
                 }
             }
@@ -2351,7 +2663,7 @@ static void ExtSE40Draw(int32_t spnum,int32_t x,int32_t y,int32_t z,int16_t a,in
     {
         for (j=0; j<MAXSPRITES; j++) // restore ceiling or floor for the draw both sectors
         {
-            if (sprite[j].picnum==SECTOREFFECTOR &&
+            if (sprite[j].picnum==ST1 && 1==0 &&// SECTOREFFECTOR &&  // dmc2017 disabled 1!=0
                     sprite[j].lotag==k+2 && sprite[j].hitag==sprite[floor1].hitag)
             {
                 if (k==40)
@@ -2503,6 +2815,7 @@ static void ReadPaletteTable()
             return;
         }
     }
+	
     //    initprintf("Loading palette lookups... ");
     kread(fp,&num_tables,1);
     for (j=0; j<num_tables; j++)
@@ -2536,7 +2849,7 @@ static void ReadGamePalette()
         if ((fp=kopen4load("palette.dat",1)) == -1)
         {
             initprintf("!!! PALETTE.DAT NOT FOUND !!!\n");
-            Bstrcpy(tempbuf, "Mapster32"VERSION BUILDDATE);
+            Bstrcpy(tempbuf, "SWMapster32"VERSION BUILDDATE);
             wm_msgbox(tempbuf,"palette.dat not found");
             exit(0);
         }
@@ -4126,7 +4439,7 @@ ENDFOR1:
 
         ExtCheckKeys();
 
-        printmessage256(0,0,"^251Text entry mode.^31 Navigation keys change vars.");
+        printmessage256(0,0,"^251Text entry mode.^1 Navigation keys change vars.");
         Bsprintf(buffer, "Hgap=%d, Vgap=%d, SPCgap=%d, Shd=%d, Pal=%d",
                  hgap, vgap, spcgap[alphidx], sprite[linebegspr].shade, sprite[linebegspr].pal);
         printmessage256(0, 9, buffer);
@@ -4447,7 +4760,7 @@ static void Keys3d(void)
                 if (getmessageleng)
                     break;
 
-                Bsprintf(lines[num++],"^251Wall %d^31", searchwall);
+                Bsprintf(lines[num++],"^251Wall %d^1", searchwall);
 
                 if (wall[searchwall].nextsector!=-1)
                     Bsprintf(lines[num++],"LoHeight:%d, HiHeight:%d, Length:%d",height1,height3,dist);
@@ -4469,7 +4782,7 @@ static void Keys3d(void)
                 if (getmessageleng)
                     break;
 
-                Bsprintf(lines[num++],"^251Sector %d^31 %s, Lotag:%s", searchsector, typestr[searchstat], ExtGetSectorCaption(searchsector));
+                Bsprintf(lines[num++],"^251Sector %d^1 %s, Lotag:%s", searchsector, typestr[searchstat], ExtGetSectorCaption(searchsector));
                 Bsprintf(lines[num++],"Height: %d, Visibility:%d", height2, sector[searchsector].visibility);
                 break;
 
@@ -4488,12 +4801,12 @@ static void Keys3d(void)
 
                 if (names[sprite[searchwall].picnum][0])
                 {
-                    if (sprite[searchwall].picnum==SECTOREFFECTOR)
-                        Bsprintf(lines[num++],"^251Sprite %d^31 %s", searchwall, SectorEffectorText(searchwall));
+                    if (sprite[searchwall].picnum==ST1)  // dmc2017
+                        Bsprintf(lines[num++],"^251Sprite %d^1 %s", searchwall, SectorEffectorText(searchwall));
                     else
-                        Bsprintf(lines[num++],"^251Sprite %d^31 %s", searchwall, names[sprite[searchwall].picnum]);
+                        Bsprintf(lines[num++],"^251Sprite %d^1 %s", searchwall, names[sprite[searchwall].picnum]);
                 }
-                else Bsprintf(lines[num++],"^251Sprite %d^31, picnum %d", searchwall, sprite[searchwall].picnum);
+                else Bsprintf(lines[num++],"^251Sprite %d^1, picnum %d", searchwall, sprite[searchwall].picnum);
 
                 Bsprintf(lines[num++], "Elevation:%d",
                          getflorzofslope(searchsector, sprite[searchwall].x, sprite[searchwall].y) - sprite[searchwall].z);
@@ -4571,13 +4884,13 @@ static void Keys3d(void)
                 asksave = 1;
         }
     }
-
-    if (PRESSED_KEYSC(3))  /* 3 (toggle floor-over-floor (cduke3d only) */
-    {
-        floor_over_floor = !floor_over_floor;
-        //        if (!floor_over_floor) ResetFOFSize();
-        message("Floor-over-floor display %s",floor_over_floor?"enabled":"disabled");
-    }
+ // dmc2017 
+    // if (PRESSED_KEYSC(3))  /* 3 (toggle floor-over-floor (cduke3d only) */
+    // {
+    //     floor_over_floor = !floor_over_floor;
+    //     //        if (!floor_over_floor) ResetFOFSize();
+    //     message("Floor-over-floor display %s",floor_over_floor?"enabled":"disabled");
+    // }
 
     if (PRESSED_KEYSC(F3))
     {
@@ -4705,15 +5018,15 @@ static void Keys3d(void)
         autosecthelp = !autosecthelp;
         message("Automatic sector tag help %s", autosecthelp?"enabled":"disabled");
     }
-
-    if (autospritehelp && helpon==0)
-    {
-        if (AIMING_AT_SPRITE && sprite[searchwall].picnum==SECTOREFFECTOR)
-            Show3dText("sehelp.hlp");
-        else if (AIMING_AT_CEILING_OR_FLOOR)
-            Show3dText("sthelp.hlp");
-    }
-
+//  // dmc2017
+//     if (autospritehelp && helpon==0)
+//     {
+//         if (AIMING_AT_SPRITE && sprite[searchwall].picnum==SECTOREFFECTOR)
+//             Show3dText("sehelp.hlp");
+//         else if (AIMING_AT_CEILING_OR_FLOOR)
+//             Show3dText("sthelp.hlp");
+//     }
+// 
     if (AIMING_AT_WALL_OR_MASK && PRESSED_KEYSC(PERIOD))
     {
         AutoAlignWalls((int32_t)searchwall, 0);
@@ -4812,40 +5125,382 @@ static void Keys3d(void)
             asksave = 1;
         }
     }
-
-    if (PRESSED_KEYSC(1) && ASSERT_AIMING)  // 1 (make 1-way wall)
+    
+// START modified from jnstub.c in SW source // dmc2017	
+    int value; 	
+    
+    if (keystatus[KEYSC_QUOTE])
     {
-        if (!AIMING_AT_SPRITE)
+        if (PRESSED_KEYSC(1) && ASSERT_AIMING)
         {
-            wall[searchwall].cstat ^= 32;
-            message("Wall %d one side masking bit %s", searchwall, ONOFF(wall[searchwall].cstat&32));
-        }
-        else
-        {
-            i = sprite[searchwall].cstat;
-            i ^= 64;
-            if ((i&48) == 32)
-            {
-                i &= ~8;
-                if ((i&64) && pos.z>sprite[searchwall].z)
-                    i |= 8;
+            if (searchstat == 3) 
+            {            
+                if (eitherSHIFT) 
+                {
+                    strcpy(tempbuf, "Sprite tag 11 (shade): ");
+                    SPRITE_TAG11(searchwall) = getnumber256(tempbuf, SPRITE_TAG11(searchwall), 65536L, 0);
+                }
+                else
+                {
+                    strcpy(tempbuf, "Sprite tag 1 (hitag): ");
+                    SPRITE_TAG1(searchwall) = getnumber256(tempbuf, SPRITE_TAG1(searchwall), 65536L, 0);
+                }
+                message(" ");
             }
-            message("Sprite %d one sided bit %s", searchwall, ONOFF(i&64));
-            sprite[searchwall].cstat = i;
         }
-        asksave = 1;
-    }
-
-    if (PRESSED_KEYSC(2))  // 2 (bottom wall swapping)
-    {
-        if (searchstat != SEARCH_SPRITE)
+        if (PRESSED_KEYSC(2) && ASSERT_AIMING)
         {
-            wall[searchwall].cstat ^= 2;
-            message("Wall %d bottom texture swap bit %s", searchwall, ONOFF(wall[searchwall].cstat&2));
+            if (searchstat == 3) 
+            {            
+                if (eitherSHIFT) 
+                {
+                    strcpy(tempbuf, "Sprite tag 12 (pal): ");
+                    SPRITE_TAG12(searchwall) = getnumber256(tempbuf, SPRITE_TAG12(searchwall), 65536L, 0);
+                }
+                else
+                {
+                    strcpy(tempbuf, "Sprite tag 2 (lotag): "); 
+                    if (sprite[searchwall].picnum == ST1 && sprite[searchwall].hitag == 1002)
+                    {
+                        int16_t oldtag = sprite[searchwall].lotag;
+                    
+                        SPRITE_TAG2(searchwall) = _getnumber256(tempbuf, SPRITE_TAG2(searchwall), 65536L, 0, (void *)MusicAndSFXTagText);
+                    
+                        if ((sprite[searchwall].filler&1) && sprite[searchwall].lotag != oldtag)
+                        {
+                            sprite[searchwall].filler &= ~1;
+                            oldtag = SNUM(oldtag);
+                            S_StopEnvSound(oldtag, searchwall);
+                        }
+                    }
+                    else
+                        SPRITE_TAG2(searchwall) = getnumber256(tempbuf, SPRITE_TAG2(searchwall), 65536L, 0);
+                }
+                message(" ");
+            }
+        }
+        if (PRESSED_KEYSC(3) && ASSERT_AIMING)
+        {
+            if (searchstat == 3) 
+            {            
+                if (eitherSHIFT) 
+                {
+                    strcpy(tempbuf, "Sprite tag 13 (xoffset/yoffset): ");
+                    i = getnumber256(tempbuf, SPRITE_TAG13(searchwall), 65536L, 0);
+                    SET_SPRITE_TAG13(searchwall, i);
+                }
+                else
+                {
+                    strcpy(tempbuf, "Sprite tag 3 (clipdist) : ");
+                    SPRITE_TAG3(searchwall) = getnumber256(tempbuf, SPRITE_TAG3(searchwall), 65536L, 0);
+                }
+                message(" ");
+            }
+        }
+        if (PRESSED_KEYSC(4) && ASSERT_AIMING)
+        {
+            if (searchstat == 3) 
+            {            
+                if (eitherSHIFT) 
+                {
+                    strcpy(tempbuf, "Sprite tag 14 (xrepeat/yrepeat): ");
+                    i = getnumber256(tempbuf, SPRITE_TAG14(searchwall), 65536L, 0);
+                    SET_SPRITE_TAG14(searchwall, i);
+                }
+                else
+                {
+                    strcpy(tempbuf, "Sprite tag 4 (ang) : ");
+                    SPRITE_TAG4(searchwall) = getnumber256(tempbuf, SPRITE_TAG4(searchwall), 65536L, 0);
+                }
+                message(" ");
+            }
+        }
+        if (PRESSED_KEYSC(5) && ASSERT_AIMING)
+        {
+            if (searchstat == 3) 
+            {            
+                if (eitherSHIFT) 
+                {
+                    strcpy(tempbuf, "Sprite tag 15 (z): ");
+                    SPRITE_TAG15(searchwall) = getnumber256(tempbuf, SPRITE_TAG15(searchwall), 65536L, 0);
+                }
+                else
+                {
+                    strcpy(tempbuf, "Sprite tag 5 (xvel) : ");
+                    SPRITE_TAG5(searchwall) = getnumber256(tempbuf, SPRITE_TAG5(searchwall), 65536L, 0);
+                }
+                message(" ");
+            }
+        }
+        if (PRESSED_KEYSC(6) && ASSERT_AIMING)
+        {
+            if (searchstat == 3) 
+            {          
+                strcpy(tempbuf, "Sprite tag 6 (yvel) : ");
+                SPRITE_TAG6(searchwall) = getnumber256(tempbuf, SPRITE_TAG6(searchwall), 65536L, 0);
+                message(" ");
+            }
+        }
+        if (PRESSED_KEYSC(7) && ASSERT_AIMING)
+        {
+            if (searchstat == 3) 
+            {          
+                strcpy(tempbuf, "Sprite tag 7 (zvel 1) <0-255> : ");
+                SPRITE_TAG7(searchwall) = getnumber256(tempbuf, SPRITE_TAG7(searchwall), 65536L, 0);
+                message(" ");
+            }
+        }
+        if (PRESSED_KEYSC(8) && ASSERT_AIMING)
+        {
+            if (searchstat == 3) 
+            {          
+                strcpy(tempbuf, "Sprite tag 8 (zvel 2) <0-255> : ");
+                SPRITE_TAG8(searchwall) = getnumber256(tempbuf, SPRITE_TAG8(searchwall), 65536L, 0);
+                message(" ");
+            }
+        }
+        if (PRESSED_KEYSC(9) && ASSERT_AIMING)
+        {
+            if (searchstat == 3) 
+            {          
+                strcpy(tempbuf, "Sprite tag 9 (owner 1) <0-255> : ");
+                SPRITE_TAG9(searchwall) = getnumber256(tempbuf, SPRITE_TAG9(searchwall), 65536L, 0);
+                message(" ");
+            }
+        }
+        if (PRESSED_KEYSC(0) && ASSERT_AIMING)
+        {
+            if (searchstat == 3) 
+            {          
+                strcpy(tempbuf, "Sprite tag 10 (owner 2) <0-255> : ");
+                SPRITE_TAG10(searchwall) = getnumber256(tempbuf, SPRITE_TAG10(searchwall), 65536L, 0);
+                message(" ");
+            }
+        }
+    }
+	else
+    {    
+    if (keystatus[KEYSC_SEMI])
+    {
+        if (PRESSED_KEYSC(1) && ASSERT_AIMING)
+        {
+            SPRITEp sp = &sprite[searchwall];
+            if (searchstat == 3) 
+            {    
+                if (eitherSHIFT) 
+                {    
+                    strcpy(tempbuf, "Boolean Sprite tag 11 (0 or 1): ");
+                    value = !!TEST_BOOL11(sp);
+                    value = getnumber256(tempbuf, value, 131072, 1);
+            
+                    if (value)
+                        SET_BOOL11(sp);
+                    else
+                        RESET_BOOL11(sp);
+                }
+                else
+                {    
+                    strcpy(tempbuf, "Boolean Sprite tag 1 (0 or 1): ");
+                    value = !!TEST_BOOL1(sp);
+                    value = getnumber256(tempbuf, value, 131072, 1);
+                    
+                    if (value)
+                        SET_BOOL1(sp);
+                    else
+                        RESET_BOOL1(sp);
+                }
+                message(" ");
+            }
+        }
+        if (PRESSED_KEYSC(2) && ASSERT_AIMING)
+        {
+            SPRITEp sp = &sprite[searchwall];
+            if (searchstat == 3) 
+            {    
+                strcpy(tempbuf, "Boolean Sprite tag 2 (0 or 1): ");
+                value = !!TEST_BOOL2(sp);
+                value = getnumber256(tempbuf, value, 131072, 1);
+                
+                if (value)
+                    SET_BOOL2(sp);
+                else
+                    RESET_BOOL2(sp);
+                message(" ");
+            }
+        }
+        if (PRESSED_KEYSC(3) && ASSERT_AIMING)
+        {
+            SPRITEp sp = &sprite[searchwall];
+            if (searchstat == 3) 
+            {    
+                strcpy(tempbuf, "Boolean Sprite tag 3 (0 or 1): ");
+                value = !!TEST_BOOL3(sp);
+                value = getnumber256(tempbuf, value, 131072, 1);
+                
+                if (value)
+                    SET_BOOL3(sp);
+                else
+                    RESET_BOOL3(sp);
+                message(" ");
+            }
+        }
+        if (PRESSED_KEYSC(4) && ASSERT_AIMING)
+        {
+            SPRITEp sp = &sprite[searchwall];
+            if (searchstat == 3) 
+            {    
+                strcpy(tempbuf, "Boolean Sprite tag 4 (0 or 1): ");
+                value = !!TEST_BOOL4(sp);
+                value = getnumber256(tempbuf, value, 131072, 1);
+                
+                if (value)
+                    SET_BOOL4(sp);
+                else
+                    RESET_BOOL4(sp);
+                message(" ");
+            }
+        }
+        if (PRESSED_KEYSC(5) && ASSERT_AIMING)
+        {
+            SPRITEp sp = &sprite[searchwall];
+            if (searchstat == 3) 
+            {    
+                strcpy(tempbuf, "Boolean Sprite tag 5 (0 or 1): ");
+                value = !!TEST_BOOL5(sp);
+                value = getnumber256(tempbuf, value, 131072, 1);
+                
+                if (value)
+                    SET_BOOL5(sp);
+                else
+                    RESET_BOOL5(sp);
+                message(" ");
+            }
+        }
+        if (PRESSED_KEYSC(6) && ASSERT_AIMING)
+        {
+            SPRITEp sp = &sprite[searchwall];
+            if (searchstat == 3) 
+                {    
+                strcpy(tempbuf, "Boolean Sprite tag 6 (0 or 1): ");
+                value = !!TEST_BOOL6(sp);
+                value = getnumber256(tempbuf, value, 131072, 1);
+
+                if (value)
+                    SET_BOOL6(sp);
+                else
+                    RESET_BOOL6(sp);
+                }
+
+            message(" ");
+        }
+        if (PRESSED_KEYSC(7) && ASSERT_AIMING)
+        {
+            SPRITEp sp = &sprite[searchwall];
+            if (searchstat == 3) 
+                {    
+                strcpy(tempbuf, "Boolean Sprite tag 7 (0 or 1): ");
+                value = !!TEST_BOOL7(sp);
+                value = getnumber256(tempbuf, value, 131072, 1);
+
+                if (value)
+                    SET_BOOL7(sp);
+                else
+                    RESET_BOOL7(sp);
+                }
+
+            message(" ");
+        }
+        if (PRESSED_KEYSC(8) && ASSERT_AIMING)
+        {
+            SPRITEp sp = &sprite[searchwall];
+            if (searchstat == 3) 
+                {    
+                strcpy(tempbuf, "Boolean Sprite tag 8 (0 or 1): ");
+                value = !!TEST_BOOL8(sp);
+                value = getnumber256(tempbuf, value, 131072, 1);
+
+                if (value)
+                    SET_BOOL8(sp);
+                else
+                    RESET_BOOL8(sp);
+                }
+
+            message(" ");
+        }
+        if (PRESSED_KEYSC(9) && ASSERT_AIMING)
+        {
+            SPRITEp sp = &sprite[searchwall];
+            if (searchstat == 3) 
+                {    
+                strcpy(tempbuf, "Boolean Sprite tag 9 (0 or 1): ");
+                value = !!TEST_BOOL9(sp);
+                value = getnumber256(tempbuf, value, 131072, 1);
+
+                if (value)
+                    SET_BOOL9(sp);
+                else
+                    RESET_BOOL9(sp);
+                }
+
+            message(" ");
+        }
+        if (PRESSED_KEYSC(0) && ASSERT_AIMING)
+        {
+            SPRITEp sp = &sprite[searchwall];
+            if (searchstat == 3) 
+                {    
+                strcpy(tempbuf, "Boolean Sprite tag 10 (0 or 1): ");
+                value = !!TEST_BOOL10(sp);
+                value = getnumber256(tempbuf, value, 131072, 1);
+
+                if (value)
+                    SET_BOOL10(sp);
+                else
+                    RESET_BOOL10(sp);
+                }
+
+            message(" ");
+        }
+    }
+// END modified from jnstub.c in SW source // dmc2017	
+    else
+    {
+        if (PRESSED_KEYSC(1) && ASSERT_AIMING)  // 1 (make 1-way wall)
+        {
+            if (!AIMING_AT_SPRITE)
+            {
+                wall[searchwall].cstat ^= 32;
+                message("Wall %d one side masking bit %s", searchwall, ONOFF(wall[searchwall].cstat&32));
+            }
+            else
+            {
+                i = sprite[searchwall].cstat;
+                i ^= 64;
+                if ((i&48) == 32)
+                {
+                    i &= ~8;
+                    if ((i&64) && pos.z>sprite[searchwall].z)
+                        i |= 8;
+                }
+                message("Sprite %d one sided bit %s", searchwall, ONOFF(i&64));
+                sprite[searchwall].cstat = i;
+            }
             asksave = 1;
         }
+    
+        if (PRESSED_KEYSC(2))  // 2 (bottom wall swapping)
+        {
+            if (searchstat != SEARCH_SPRITE)
+            {
+                wall[searchwall].cstat ^= 2;
+                message("Wall %d bottom texture swap bit %s", searchwall, ONOFF(wall[searchwall].cstat&2));
+                asksave = 1;
+            }
+        }
+    
     }
-
+    }
+    
     if (PRESSED_KEYSC(O))  // O (top/bottom orientation - for doors)
     {
         if (AIMING_AT_WALL_OR_MASK)
@@ -4907,7 +5562,15 @@ static void Keys3d(void)
     {
         if (keystatus[KEYSC_QUOTE])
         {
-            if (ASSERT_AIMING)
+            if (AIMING_AT_SPRITE)
+            {
+                if (sprite[searchwall].picnum == ST1)
+                {
+                    sprite[searchwall].hitag =
+                        _getnumber256("Sprite hitag: ", sprite[searchwall].hitag, BTAG_MAX, 0, (void *)SectorEffectorTagText);
+                }
+            }
+            else if (ASSERT_AIMING)
             {
                 Bsprintf(tempbuf, "%s hitag: ", Typestr_wss[searchstat]);
                 getnumberptr256(tempbuf, &AIMED(hitag), sizeof(int16_t), BTAG_MAX, 0, NULL);
@@ -4936,6 +5599,8 @@ static void Keys3d(void)
             }
         }
     }
+	
+	
 
     smooshyalign = keystatus[KEYSC_gKP5];
     repeatpanalign = eitherSHIFT || (bstatus&2);
@@ -5506,6 +6171,7 @@ static void Keys3d(void)
     }
     */
 
+    /*/ // removed NAMES.H 10-16-17 // dmc2017
     if (sector[cursectnum].lotag==2)
     {
         if (sector[cursectnum].ceilingpicnum==FLOORSLIME)
@@ -5513,7 +6179,10 @@ static void Keys3d(void)
         else
             SetWATERPalette();
     }
-    else SetGAMEPalette();
+    /*/ // removed NAMES.H 10-16-17 // dmc2017
+    
+    // else SetGAMEPalette();
+    SetGAMEPalette();
 
     if (keystatus[buildkeys[BK_MODE2D_3D]])  // Enter
     {
@@ -5625,12 +6294,12 @@ static void Keys3d(void)
         }
         else if (AIMING_AT_SPRITE)
         {
-            if (sprite[searchwall].picnum == SECTOREFFECTOR)
+            /*if (sprite[searchwall].picnum == SECTOREFFECTOR)
             {
                 sprite[searchwall].lotag =
                     _getnumber256("Sprite lotag: ", sprite[searchwall].lotag, BTAG_MAX, 0, (void *)SectorEffectorTagText);
             }
-            else if (sprite[searchwall].picnum == MUSICANDSFX)
+            else*/ if (sprite[searchwall].picnum == ST1 && sprite[searchwall].hitag == 1002) // dmc2017
             {
                 int16_t oldtag = sprite[searchwall].lotag;
 
@@ -5650,6 +6319,7 @@ static void Keys3d(void)
 
     if (keystatus[KEYSC_QUOTE] && PRESSED_KEYSC(H)) // ' H
     {
+        
         if (ASSERT_AIMING)
         {
             int16_t ohitag = AIMED(hitag);
@@ -6792,8 +7462,8 @@ static void Keys2d(void)
                 i = pointhighlight-16384;
                 showspritedata(i, 1);
 
-                if (sprite[i].picnum==SECTOREFFECTOR)
-                    _printmessage16("^10%s", SectorEffectorText(i));
+                // if (sprite[i].picnum==SECTOREFFECTOR)
+                //     _printmessage16("^10%s", SectorEffectorText(i));
             }
             else if (linehighlight >= 0 && ((bstatus&1) || sectorofwall(linehighlight)==tcursectornum))
                 showwalldata(linehighlight, 1);
@@ -6828,8 +7498,9 @@ static void Keys2d(void)
             {
                 i = pointhighlight-16384;
                 Bsprintf(buffer,"Sprite (%d) Lo-tag: ", i);
-                sprite[i].lotag = _getnumber16(buffer, sprite[i].lotag, BTAG_MAX, 0, sprite[i].picnum==SECTOREFFECTOR ?
-                                               (void *)SectorEffectorTagText : NULL);
+                // sprite[i].lotag = _getnumber16(buffer, sprite[i].lotag, BTAG_MAX, 0, sprite[i].picnum==SECTOREFFECTOR ?
+                //                                (void *)SectorEffectorTagText : NULL);
+                sprite[i].lotag = getnumber16(buffer, sprite[i].lotag, BTAG_MAX, 0);
             }
             else if (linehighlight >= 0)
             {
@@ -6863,7 +7534,7 @@ static void Keys2d(void)
             m32_setkeyfilter(1);
         }
         else
-            printmessage16("m32help.hlp invalid or not found!");
+            printmessage16("SWMapster32.hlp invalid or not found!");
     }
 
     if (PRESSED_KEYSC(F2))
@@ -7219,20 +7890,20 @@ static void Keys2d(void)
 
 ///__motorcycle___
 
-    if (keystatus[KEYSC_QUOTE] && PRESSED_KEYSC(7)) // ' 7 : swap hilo
-    {
-
-        if (pointhighlight >= 16384)
-        {
-            swapshort(&sprite[cursprite].lotag, &sprite[cursprite].hitag);
-            printmessage16("Sprite %d tags swapped", cursprite);
-        }
-        else if (linehighlight >= 0)
-        {
-            swapshort(&wall[linehighlight].lotag, &wall[linehighlight].hitag);
-            printmessage16("Wall %d tags swapped", linehighlight);
-        }
-    }
+//     if (keystatus[KEYSC_QUOTE] && PRESSED_KEYSC(7)) // ' 7 : swap hilo
+//     {
+// 
+//         if (pointhighlight >= 16384)
+//         {
+//             swapshort(&sprite[cursprite].lotag, &sprite[cursprite].hitag);
+//             printmessage16("Sprite %d tags swapped", cursprite);
+//         }
+//         else if (linehighlight >= 0)
+//         {
+//             swapshort(&wall[linehighlight].lotag, &wall[linehighlight].hitag);
+//             printmessage16("Wall %d tags swapped", linehighlight);
+//         }
+//     }
 
     if (keystatus[KEYSC_QUOTE] && PRESSED_KEYSC(J)) // ' J
     {
@@ -7242,87 +7913,34 @@ static void Keys2d(void)
     }
 }// end key2d
 
-static void InitCustomColors(void)
+static void InitCustomColors(void) // dmc2017
 {
-    /* blue */
-    /*    vgapal16[9*4+0] = 63;
-    vgapal16[9*4+1] = 31;
-    vgapal16[9*4+2] = 7; */
-    int32_t i;
-    palette_t *edcol;
-    /*
+    editorcolors[0] = getclosestcol(0,0,0); // tag text		
+    editorcolors[1] = getclosestcol(63,63,63); // ??		
+    editorcolors[2] = getclosestcol(42,21,0); // start pos	****	
+    editorcolors[3] = getclosestcol(36,54,24); // sprites	****	
+    editorcolors[4] = getclosestcol(0,0,0); // text shadows?	    
+    editorcolors[5] = getclosestcol(25,12,28); //  blocking sprites and walls ****		
+    editorcolors[7] = getclosestcol(16,16,16); //  white wall highlight	
+    editorcolors[8] = getclosestcol(63,63,63); // ??		
+    editorcolors[9] = getclosestcol(63,63,63); // ??		
+    editorcolors[10] = getclosestcol(42,0,0); // current selected text bottom left	
+    editorcolors[11] = getclosestcol(56,52,22); // sprite highlight, !!whitecol!!	    
+    editorcolors[12] = getclosestcol(63,21,21); // cursor    ****
+    editorcolors[13] = getclosestcol(20,26,32); // blocking sprites and walls highlights     
+	editorcolors[14] = getclosestcol(63,0,0); // plotlines2d, markedcol    
+	editorcolors[15] = getclosestcol(42,42,42); // white walls, player pos    
+    editorcolors[31] = getclosestcol(63,63,63); // ?? average point of wall	
+    editorcolors[33] = getclosestcol(42,0,0); // redwalls	    
+    editorcolors[41] = getclosestcol(55,48,45); // redwall - mouse highlight 
+    editorcolors[42] = getclosestcol(0,42,0); // drawcircle16 engine.c // verts
 
-    char vgapal16[4*256] =
-    {
-    00,00,00,00, 42,00,00,00, 00,42,00,00, 42,42,00,00, 00,00,42,00,
-    42,00,42,00, 00,21,42,00, 42,42,42,00, 21,21,21,00, 63,21,21,00,
-    21,63,21,00, 63,63,21,00, 21,21,63,00, 63,21,63,00, 21,63,63,00,
-    63,63,63,00
-    };
-    */
-    /*    editorcolors[0] = getclosestcol(0,0,0);
-    editorcolors[1] = getclosestcol(0,0,42);
-    editorcolors[2] = getclosestcol(0,42,0);
-    editorcolors[3] = getclosestcol(0,42,42);
-    editorcolors[4] = getclosestcol(42,0,0);
-    editorcolors[5] = getclosestcol(0,0,0);
-    */
-
-    vgapal16[9*4+0] = 63;
-    vgapal16[9*4+1] = 31;
-    vgapal16[9*4+2] = 7;
-
-    /* orange */
-    vgapal16[31*4+0] = 20; // blue
-    vgapal16[31*4+1] = 45; // green
-    vgapal16[31*4+2] = 60; // red
-
-    vgapal16[39*4+0] = 36;
-    vgapal16[39*4+1] = 53;
-    vgapal16[39*4+2] = 63;
-
-
-    /* light yellow */
-    vgapal16[22*4+0] = 51;
-    vgapal16[22*4+1] = 63;
-    vgapal16[22*4+2] = 63;
-
-    /* grey */
-    vgapal16[23*4+0] = 45;
-    vgapal16[23*4+1] = 45;
-    vgapal16[23*4+2] = 45;
-
-    /* blue */
-    vgapal16[24*4+0] = 51;
-    vgapal16[24*4+1] = 41;
-    vgapal16[24*4+2] = 12;
-
-    vgapal16[32*4+0] = 60;
-    vgapal16[32*4+1] = 50;
-    vgapal16[32*4+2] = 21;
-
-    // grid color
-    vgapal16[25*4+0] = 19;
-    vgapal16[25*4+1] = 17;
-    vgapal16[25*4+2] = 17;
-
-    vgapal16[26*4+0] = 24;
-    vgapal16[26*4+1] = 24;
-    vgapal16[26*4+2] = 24;
-
-    vgapal16[33*4+0] = 0;//15; // blue
-    vgapal16[33*4+1] = 0;//30; // green
-    vgapal16[33*4+2] = 48;//45; // red
-
-    vgapal16[41*4+0] = 0;//24;
-    vgapal16[41*4+1] = 0;//40;
-    vgapal16[41*4+2] = 63;//48;
-
-    for (i = 0; i<256; i++)
-    {
-        edcol = (palette_t *)&vgapal16[4*i];
-        editorcolors[i] = getclosestcol(edcol->b,edcol->g,edcol->r);
-    }
+// 
+//     int32_t i;
+// 	for (i = 0; i<48; i++)
+// 	{
+// 		editorcolors[i] = getclosestcol(63,0,0);
+// 	}	
 }
 
 void ExtPreSaveMap(void)
@@ -7361,7 +7979,7 @@ void ExtPreSaveMap(void)
 
 static void G_ShowParameterHelp(void)
 {
-    char *s = "Usage: mapster32 [OPTIONS] [FILE]\n\n"
+    char *s = "Usage: swmapster32 [OPTIONS] [FILE]\n\n"
               "-gFILE, -grp FILE\tUse extra group file FILE\n"
               "-hFILE\t\tUse definitions file FILE\n"
               "-jDIR, -game_dir DIR\n\t\tAdds DIR to the file path stack\n"
@@ -7375,7 +7993,7 @@ static void G_ShowParameterHelp(void)
 #endif
               "\n-?, -help, --help\tDisplay this help message and exit"
               ;
-    wm_msgbox("Mapster32"VERSION BUILDDATE,"%s",s);
+    wm_msgbox("SWMapster32"VERSION BUILDDATE,"%s",s); // dmc2017
 }
 
 static void AddGamePath(const char *buffer)
@@ -7652,7 +8270,7 @@ static void G_CheckCommandLine(int32_t argc, const char **argv)
 
 int32_t ExtPreInit(int32_t argc,const char **argv)
 {
-    wm_setapptitle("Mapster32");
+    wm_setapptitle("SWMapster32"); // dmc2017
 
 #ifdef _WIN32
     tempbuf[GetModuleFileName(NULL,tempbuf,BMAX_PATH)] = 0;
@@ -7660,9 +8278,9 @@ int32_t ExtPreInit(int32_t argc,const char **argv)
     //chdir(tempbuf);
 #endif
 
-    OSD_SetLogFile("mapster32.log");
-    OSD_SetVersion("Mapster32"VERSION,0,2);
-    initprintf("Mapster32"VERSION BUILDDATE"\n");
+    OSD_SetLogFile("SWMapster32.log");
+    OSD_SetVersion("SWMapster32"VERSION,0,2);
+    initprintf("SWMapster32"VERSION BUILDDATE"\n");
     //    initprintf("Copyright (c) 2008 EDuke32 team\n");
 
     G_CheckCommandLine(argc,argv);
@@ -9112,11 +9730,13 @@ int32_t ExtInit(void)
             DoAutoload(g_grpNamePtr);
     }
 
-    if (getenv("DUKE3DDEF"))
-    {
-        defsfilename = getenv("DUKE3DDEF");
-        initprintf("Using '%s' as definitions file\n", defsfilename);
-    }
+    // if (getenv("DUKE3DDEF"))
+    // {
+    //     defsfilename = getenv("DUKE3DDEF");
+    //     initprintf("Using '%s' as definitions file\n", defsfilename);
+    // }
+    defsfilename = ("SWMapster32.def");  // dmc2017
+    initprintf("Using '%s' as definitions file\n", defsfilename);
     loadgroupfiles(defsfilename);
 
     {
@@ -9148,7 +9768,7 @@ int32_t ExtInit(void)
 #if defined(POLYMOST) && defined(USE_OPENGL)
     glusetexcache = -1;
 
-    if (Bstrcmp(setupfilename, "mapster32.cfg"))
+    if (Bstrcmp(setupfilename, "swmapster32.cfg"))
         initprintf("Using config file '%s'.\n",setupfilename);
 
     if (loadsetup(setupfilename) < 0) initprintf("Configuration file not found, using defaults.\n"), rv = 1;
@@ -9190,7 +9810,7 @@ int32_t ExtInit(void)
     getmessageleng = 0;
     getmessagetimeoff = 0;
 
-    Bstrcpy(apptitle, "Mapster32"VERSION BUILDDATE);
+    Bstrcpy(apptitle, "SWMapster32"VERSION BUILDDATE);
     autosavetimer = totalclock+120*autosave;
 
 #if defined(DUKEOSD)
@@ -9205,7 +9825,7 @@ int32_t ExtInit(void)
     pathsearchmode_oninit = pathsearchmode;
     loadtilegroups(default_tiles_cfg);
 
-    ReadHelpFile("m32help.hlp");
+    ReadHelpFile("SWMapster32.hlp");  // dmc2017
 
     signal(SIGINT, m32script_interrupt_handler);
 
@@ -9257,6 +9877,7 @@ void ExtPreCheckKeys(void) // just before drawrooms
 
     if (qsetmode == 200)    //In 3D mode
     {
+        /*
         if (shadepreview)
         {
             int32_t i = 0;
@@ -9291,6 +9912,8 @@ void ExtPreCheckKeys(void) // just before drawrooms
                         wallflag[wall[w].nextwall] = 1;
                         }
                         } */
+                        
+                        /*
                     }
                     sectorshades[isec][0] = sector[isec].floorshade;
                     sectorshades[isec][1] = sector[isec].ceilingshade;
@@ -9456,6 +10079,7 @@ void ExtPreCheckKeys(void) // just before drawrooms
 #endif // POLYMER
                 }
         }
+        */
 
         if (floor_over_floor) SE40Code(pos.x,pos.y,pos.z,ang,horiz);
         if (purpleon) clearview(255);
@@ -9466,7 +10090,7 @@ void ExtPreCheckKeys(void) // just before drawrooms
 
     //    if (cursectornum >= 0)
     //        fillsector(cursectornum, 31);
-
+    /*/ // removed NAMES.H 10-16-17 // dmc2017
     if (graphicsmode && !m32_sideview && zoom >= 256)
     {
         for (i=ii=0; i<MAXSPRITES && ii < numsprites; i++)
@@ -9582,12 +10206,13 @@ void ExtPreCheckKeys(void) // just before drawrooms
                          shade,sprite[i].pal,flags,0,0,xdim-1,ydim16-1);
         }
     }
+    /*/ // removed NAMES.H 10-16-17 // dmc2017
 
     if (showambiencesounds)
     {
         for (ii=0; ii<numsectors; ii++)
             for (i=headspritesect[ii]; i>=0; i=nextspritesect[i])
-                if (sprite[i].picnum == MUSICANDSFX /*&& zoom >= 256*/ )
+                if (sprite[i].picnum == 2307 && sprite[i].hitag == 1002 /*&& zoom >= 256*/ )  // dmc2017
                 {
                     if (showambiencesounds==1 && sprite[i].sectnum!=cursectnum)
                         continue;
@@ -9595,11 +10220,20 @@ void ExtPreCheckKeys(void) // just before drawrooms
                     screencoords(&xp1,&yp1, sprite[i].x-pos.x,sprite[i].y-pos.y, zoom);
                     if (m32_sideview)
                         yp1 += getscreenvdisp(sprite[i].z-pos.z, zoom);
-
-                    radius = mulscale14(sprite[i].hitag,zoom);
-                    col = 6;
+            
+                    switch (sprite[i].lotag)
+                    {
+                        case 23: case 68: case 78: case 79:  // -8000
+                            radius = mulscale14(4096,zoom); // circle size
+                        break;
+                        default: 
+                            radius = mulscale14(8192,zoom); // circle size
+                        break;
+                    }
+            
+                    col = 2; // 6;
                     if (i+16384 == pointhighlight)
-                        if (totalclock & 32) col += (2<<2);
+                        if (totalclock & 32) col = 14; // col += (2<<2);
                     drawlinepat = 0xf0f0f0f0;
                     drawcircle16(halfxdim16+xp1, midydim16+yp1, radius, scalescreeny(16384), editorcolors[(int32_t)col]);
                     drawlinepat = 0xffffffff;
@@ -9622,14 +10256,16 @@ void ExtAnalyzeSprites(void)
         frames=0;
 
         if ((nosprites==1||nosprites==3)&&tspr->picnum<11) tspr->xrepeat=0;
-
+        
+    /*/ // removed NAMES.H 10-16-17 // dmc2017
         if (nosprites==1||nosprites==3)
             switch (tspr->picnum)
             {
             case SEENINE :
                 tspr->xrepeat=0;
             }
-
+    /*/ // removed NAMES.H 10-16-17 // dmc2017
+    
         if (showinvisibility && (tspr->cstat&32768))
         {
             tspr->pal = 6;
@@ -9661,6 +10297,7 @@ void ExtAnalyzeSprites(void)
 
         }
 
+    /*/ // removed NAMES.H 10-16-17 // dmc2017
         switch (tspr->picnum)
         {
             // 5-frame walk
@@ -9759,6 +10396,7 @@ void ExtAnalyzeSprites(void)
             break;
 
         }
+    /*/ // removed NAMES.H 10-16-17 // dmc2017
     }
 
     VM_OnEvent(EVENT_ANALYZESPRITES, -1);
@@ -9903,6 +10541,7 @@ void ExtCheckKeys(void)
 
     if (qsetmode == 200)
     {
+        /*
         if (shadepreview)
         {
             int32_t i = 0;
@@ -9933,6 +10572,8 @@ void ExtCheckKeys(void)
                         wallflag[wall[w].nextwall] = 0;
                         }
                         } */
+                        
+                        /*
                     }
                     sector[isec].floorshade = sectorshades[isec][0];
                     sector[isec].ceilingshade = sectorshades[isec][1];
@@ -9949,6 +10590,7 @@ void ExtCheckKeys(void)
                     }
                 }
         }
+        */
     }
     lastbstatus = bstatus;
     readmousebstatus(&bstatus);

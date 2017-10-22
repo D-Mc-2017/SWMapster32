@@ -184,12 +184,11 @@ endif
 
 # TARGETS
 
-all: notice eduke32$(EXESUFFIX) mapster32$(EXESUFFIX)
+all: notice SWMapster32$(EXESUFFIX)
 
 all:
 	$(BUILD_FINISHED)
-	@ls -l eduke32$(EXESUFFIX)
-	@ls -l mapster32$(EXESUFFIX)
+	@ls -l SWMapster32$(EXESUFFIX)
 
 notice:
 	$(BUILD_STARTED)
@@ -203,12 +202,12 @@ ifeq (1,$(RELEASE))
   endif
 endif
 
-mapster32$(EXESUFFIX): $(EDITOROBJS) $(EOBJ)/$(EDITORLIB) $(EOBJ)/$(ENGINELIB) $(JAUDIOLIBDIR)/$(JAUDIOLIB) $(ENETDIR)/$(ENETLIB)
+SWMapster32$(EXESUFFIX): $(EDITOROBJS) $(EOBJ)/$(EDITORLIB) $(EOBJ)/$(ENGINELIB) $(JAUDIOLIBDIR)/$(JAUDIOLIB) $(ENETDIR)/$(ENETLIB)
 	$(LINK_STATUS)
 	if $(CC) $(CFLAGS) $(OURCFLAGS) -o $@ $^ $(LIBS) $(STDCPPLIB) $(MISCLINKOPTS); then $(LINK_OK); else $(LINK_FAILED); fi
 ifeq (1,$(RELEASE))	
   ifeq (0,$(DEBUGANYWAY))
-	$(STRIP) mapster32$(EXESUFFIX)
+	$(STRIP) SWMapster32$(EXESUFFIX)
   endif
 endif
 
@@ -297,7 +296,7 @@ $(RSRC)/editor_banner.c: $(RSRC)/build.bmp
 # PHONIES	
 
 clean:
-	-rm -f $(OBJ)/* eduke32$(EXESUFFIX) mapster32$(EXESUFFIX) core* duke3d_w32$(EXESUFFIX) && $(MAKE) -C $(JAUDIOLIBDIR) clean && $(MAKE) -C $(ENETDIR) clean
+	-rm -f $(OBJ)/* eduke32$(EXESUFFIX) SWMapster32$(EXESUFFIX) core* duke3d_w32$(EXESUFFIX) && $(MAKE) -C $(JAUDIOLIBDIR) clean && $(MAKE) -C $(ENETDIR) clean
 
 veryclean: clean
 	-rm -f $(EOBJ)/* $(RSRC)/*banner*
