@@ -75,7 +75,7 @@ of the License, or (at your option) any later version.
 
 #include <signal.h>
 
-#define BUILDDATE " 20171022"
+#define BUILDDATE " 20171025"
 
 static int32_t floor_over_floor;
 
@@ -715,80 +715,53 @@ static int32_t tileInGroup(int32_t group, int32_t tilenum)
     return 0;
 }
 
-const char *ExtGetSectorType(int32_t lotag)
+const char *ExtGetSectorType(int32_t lotag) // dmc2017
 {
     static char tempbuf[64];
 
     Bmemset(tempbuf,0,sizeof(tempbuf));
     switch (lotag)
     {
-    case 1:
-        Bsprintf(tempbuf,"WATER (SE 7)");
+    case 43: 
+        Bsprintf(tempbuf,"TRIGGER_MISSILE_TRAP");
         break;
-    case 2:
-        Bsprintf(tempbuf,"UNDERWATER (SE 7)");
+    case 116: 
+        Bsprintf(tempbuf,"LEVEL_EXIT_SWITCH");
         break;
-    case 9:
-        Bsprintf(tempbuf,"STAR TREK DOORS");
+    case 206: 
+        Bsprintf(tempbuf,"SECTOR_TRIGGER_VATOR");
         break;
-    case 15:
-        Bsprintf(tempbuf,"ELEVATOR TRANSPORT (SE 17)");
+    case 210: 
+        Bsprintf(tempbuf,"LIGHT_TRIGGER");
         break;
-    case 16:
-        Bsprintf(tempbuf,"ELEVATOR PLATFORM DOWN");
+    case 211: 
+        Bsprintf(tempbuf,"TRIGGER_EVERYTHING");
         break;
-    case 17:
-        Bsprintf(tempbuf,"ELEVATOR PLATFORM UP");
+    case 212: 
+        Bsprintf(tempbuf,"TRIGGER_EVERYTHING_ONCE");
         break;
-    case 18:
-        Bsprintf(tempbuf,"ELEVATOR DOWN");
+    case 216: 
+        Bsprintf(tempbuf,"SPAWN_ACTOR_TRIGGER");
         break;
-    case 19:
-        Bsprintf(tempbuf,"ELEVATOR UP");
+    case 217: 
+        Bsprintf(tempbuf,"SECRET_AREA_TRIGGER");
         break;
-    case 20:
-        Bsprintf(tempbuf,"CEILING DOOR");
+    case 240: 
+        Bsprintf(tempbuf,"SPRING_BOARD");
         break;
-    case 21:
-        Bsprintf(tempbuf,"FLOOR DOOR");
+    case 400: 
+        Bsprintf(tempbuf,"SINE_WAVE_FLOOR");
         break;
-    case 22:
-        Bsprintf(tempbuf,"SPLIT DOOR");
+    case 420: 
+        Bsprintf(tempbuf,"SINE_WAVE_CEILING");
         break;
-    case 23:
-        Bsprintf(tempbuf,"SWING DOOR (SE 11)");
+    case 440: 
+        Bsprintf(tempbuf,"SINE_WAVE_BOTH");
         break;
-    case 25:
-        Bsprintf(tempbuf,"SLIDE DOOR (SE 15)");
-        break;
-    case 26:
-        Bsprintf(tempbuf,"SPLIT STAR TREK DOOR");
-        break;
-    case 27:
-        Bsprintf(tempbuf,"BRIDGE (SE 20)");
-        break;
-    case 28:
-        Bsprintf(tempbuf,"DROP FLOOR (SE 21)");
-        break;
-    case 29:
-        Bsprintf(tempbuf,"TEETH DOOR (SE 22)");
-        break;
-    case 30:
-        Bsprintf(tempbuf,"ROTATE RISE BRIDGE");
-        break;
-    case 31:
-        Bsprintf(tempbuf,"2 WAY TRAIN (SE=30)");
-        break;
-    case 32767:
-        Bsprintf(tempbuf,"SECRET ROOM");
-        break;
-    case -1:
-        Bsprintf(tempbuf,"END OF LEVEL");
-        break;
+    case 501: 
+        Bsprintf(tempbuf,"OBJECT_CENTER");    
+        break;    
     default :
-        if (lotag > 10000 && lotag < 32767)
-            Bsprintf(tempbuf,"1 TIME SOUND");
-        //        else  Bsprintf(tempbuf,"%hu",lotag);
         break;
     }
     return(tempbuf);
