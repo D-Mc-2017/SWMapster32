@@ -2,10 +2,7 @@
 Shadow Warrior Map Editor Port
 ==============================
 
- * This Release 1.0: 22 October 2017
-
-
-This is a work-in-progress release of SWMapster32 using Duke3D map editor port Mapster32 as a codebase. 
+This is a work-in-progress release of SWMapster32 using Build map editor port Mapster32 as a codebase. 
 There are bugs which I'm tracking down and fixing as an ongoing process.
 
 Warnings

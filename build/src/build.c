@@ -7139,7 +7139,7 @@ void showsectordata(int16_t sectnum, int16_t small)
     sectortype *sec;
     char snotbuf[80];
     int32_t col=0;  //,row = 0;
-    int32_t color = small ? whitecol : editorcolors[11];
+    int32_t color = small ? whitecol : editorcolors[1];
 
     sec = &sector[sectnum];
 
@@ -7188,7 +7188,7 @@ void showwalldata(int16_t wallnum, int16_t small)
     int32_t sec;
     char snotbuf[80];
     int32_t col=0; //, row = 0;
-    int32_t color = small ? whitecol : editorcolors[11];
+    int32_t color = small ? whitecol : editorcolors[1];
 
     wal = &wall[wallnum];
 
@@ -7237,7 +7237,7 @@ void showspritedata(int16_t spritenum, int16_t small)
     spritetype *spr;
     char snotbuf[80];
     int32_t col=0; //, row = 0;
-    int32_t color = small ? whitecol : editorcolors[11];
+    int32_t color = small ? whitecol : editorcolors[1];
 
     spr = &sprite[spritenum];
 

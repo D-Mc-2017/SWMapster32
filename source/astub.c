@@ -75,7 +75,7 @@ of the License, or (at your option) any later version.
 
 #include <signal.h>
 
-#define BUILDDATE " 20171025"
+#define BUILDDATE " 20171104"
 
 static int32_t floor_over_floor;
 
@@ -981,68 +981,152 @@ const char *SectorEffectorTagText(int32_t hitag) // dmc2017
         // Bsprintf(tempbuf, "%d: %s", hitag, tags[hitag]);
         Bsprintf(tempbuf, "%s", tags[hitag]);
     else
-/*
-BOUND_FLOOR_UPPER,           200
-BOUND_FLOOR_LOWER,           201
-BOUND_FLOOR_BASE_OFFSET,     202
-BOUND_FLOOR_OFFSET,          203
-
-BOUND_SO_UPPER0,             500
-BOUND_SO_LOWER0,             501
-BOUND_SO_UPPER1,             505
-BOUND_SO_LOWER1,             506
-BOUND_SO_UPPER2,             510
-BOUND_SO_LOWER2,             511
-BOUND_SO_UPPER3,             515
-BOUND_SO_LOWER3,             516
-BOUND_SO_UPPER4,             520
-BOUND_SO_LOWER4,             521
-BOUND_SO_UPPER5,             525
-BOUND_SO_LOWER5,             526
-BOUND_SO_UPPER6,             530
-BOUND_SO_LOWER6,             531
-BOUND_SO_UPPER7,             535
-BOUND_SO_LOWER7,             536
-BOUND_SO_UPPER8,             540
-BOUND_SO_LOWER8,             541
-BOUND_SO_UPPER9,             545
-BOUND_SO_LOWER9,             546
-BOUND_SO_UPPER10,            550
-BOUND_SO_LOWER10,            551
-BOUND_SO_UPPER11,            555
-BOUND_SO_LOWER11,            556
-BOUND_SO_UPPER12,            560
-BOUND_SO_LOWER12,            561
-BOUND_SO_UPPER13,            565
-BOUND_SO_LOWER13,            566
-BOUND_SO_UPPER14,            570
-BOUND_SO_LOWER14,            571
-BOUND_SO_UPPER15,            575
-BOUND_SO_LOWER15,            576
-BOUND_SO_UPPER16,            580
-BOUND_SO_LOWER16,            581
-BOUND_SO_UPPER17,            585
-BOUND_SO_LOWER17,            586
-BOUND_SO_UPPER18,            590
-BOUND_SO_LOWER18,            591
-BOUND_SO_UPPER19,            595
-BOUND_SO_LOWER19,            596
-TV_CAMERA,                  1000
-AMBIENT,                    1002
-ECHOSPOT,                   1005
-DRIP_GENERATOR,             1006
-*/
         switch (hitag)
         {
         case 200:
             Bsprintf(tempbuf,"BOUND_FLOOR_UPPER");
             break;
+        case 201:
+            Bsprintf(tempbuf,"BOUND_FLOOR_LOWER");
+            break;       
+        case 202:
+            Bsprintf(tempbuf,"BOUND_FLOOR_BASE_OFFSET");
+            break; 
+        case 203:
+            Bsprintf(tempbuf,"BOUND_FLOOR_OFFSET");
+            break;  
+        case 500:
+            Bsprintf(tempbuf,"BOUND_SO_UPPER0");
+            break;         
+        case 501:
+            Bsprintf(tempbuf,"BOUND_SO_LOWER0");
+            break;         
+        case 505:
+            Bsprintf(tempbuf,"BOUND_SO_UPPER1");
+            break;         
+        case 506:
+            Bsprintf(tempbuf,"BOUND_SO_LOWER1");
+            break;         
+        case 510:
+            Bsprintf(tempbuf,"BOUND_SO_UPPER2");
+            break;         
+        case 511:
+            Bsprintf(tempbuf,"BOUND_SO_LOWER2");
+            break;         
+        case 515:
+            Bsprintf(tempbuf,"BOUND_SO_UPPER3");
+            break;         
+        case 516:
+            Bsprintf(tempbuf,"BOUND_SO_LOWER3");
+            break;         
+        case 520:
+            Bsprintf(tempbuf,"BOUND_SO_UPPER4");
+            break;         
+        case 521:
+            Bsprintf(tempbuf,"BOUND_SO_LOWER4");
+            break;         
+        case 525:
+            Bsprintf(tempbuf,"BOUND_SO_UPPER5");
+            break;         
+        case 526:
+            Bsprintf(tempbuf,"BOUND_SO_LOWER5");
+            break;         
+        case 530:
+            Bsprintf(tempbuf,"BOUND_SO_UPPER6");
+            break;         
+        case 531:
+            Bsprintf(tempbuf,"BOUND_SO_LOWER6");
+            break;         
+        case 535:
+            Bsprintf(tempbuf,"BOUND_SO_UPPER7");
+            break;         
+        case 536:
+            Bsprintf(tempbuf,"BOUND_SO_LOWER7");
+            break;         
+        case 540:
+            Bsprintf(tempbuf,"BOUND_SO_UPPER8");
+            break;         
+        case 541:
+            Bsprintf(tempbuf,"BOUND_SO_LOWER8");
+            break;         
+        case 545:
+            Bsprintf(tempbuf,"BOUND_SO_UPPER9");
+            break;         
+        case 546:
+            Bsprintf(tempbuf,"BOUND_SO_LOWER9");
+            break;         
+        case 550:
+            Bsprintf(tempbuf,"BOUND_SO_UPPER10");
+            break;        
+        case 551:
+            Bsprintf(tempbuf,"BOUND_SO_LOWER10");
+            break;        
+        case 555:
+            Bsprintf(tempbuf,"BOUND_SO_UPPER11");
+            break;        
+        case 556:
+            Bsprintf(tempbuf,"BOUND_SO_LOWER11");
+            break;        
+        case 560:
+            Bsprintf(tempbuf,"BOUND_SO_UPPER12");
+            break;        
+        case 561:
+            Bsprintf(tempbuf,"BOUND_SO_LOWER12");
+            break;        
+        case 565:
+            Bsprintf(tempbuf,"BOUND_SO_UPPER13");
+            break;        
+        case 566:
+            Bsprintf(tempbuf,"BOUND_SO_LOWER13");
+            break;        
+        case 570:
+            Bsprintf(tempbuf,"BOUND_SO_UPPER14");
+            break;        
+        case 571:
+            Bsprintf(tempbuf,"BOUND_SO_LOWER14");
+            break;        
+        case 575:
+            Bsprintf(tempbuf,"BOUND_SO_UPPER15");
+            break;        
+        case 576:
+            Bsprintf(tempbuf,"BOUND_SO_LOWER15");
+            break;        
+        case 580:
+            Bsprintf(tempbuf,"BOUND_SO_UPPER16");
+            break;        
+        case 581:
+            Bsprintf(tempbuf,"BOUND_SO_LOWER16");
+            break;        
+        case 585:
+            Bsprintf(tempbuf,"BOUND_SO_UPPER17");
+            break;        
+        case 586:
+            Bsprintf(tempbuf,"BOUND_SO_LOWER17");
+            break;        
+        case 590:
+            Bsprintf(tempbuf,"BOUND_SO_UPPER18");
+            break;        
+        case 591:
+            Bsprintf(tempbuf,"BOUND_SO_LOWER18");
+            break;        
+        case 595:
+            Bsprintf(tempbuf,"BOUND_SO_UPPER19");
+            break;        
+        case 596:
+            Bsprintf(tempbuf,"BOUND_SO_LOWER19");
+            break;        
+        case 1000:
+            Bsprintf(tempbuf,"TV_CAMERA");
+            break;               
         case 1002:
             Bsprintf(tempbuf,"AMBIENT");
-            break;
+            break;                 
         case 1005:
             Bsprintf(tempbuf,"ECHOSPOT");
-            break;
+            break;                
+        case 1006:
+            Bsprintf(tempbuf,"DRIP_GENERATOR");
+            break;  
         default:
             Bsprintf(tempbuf,"ST1");
             break;
@@ -1168,7 +1252,7 @@ const char *SectorEffectorText(int32_t spritenum)
     if (!lo[5]) // tags are 5 chars or less
         SpriteName(spritenum, tempbuf);
     else
-        Bsprintf(tempbuf, "%s",lo);
+        Bsprintf(tempbuf, "%s,%d,%d",lo,(sprite[spritenum].hitag),(sprite[spritenum].lotag));
 
     return (tempbuf);
 }
@@ -5111,12 +5195,12 @@ static void Keys3d(void)
                 if (eitherSHIFT) 
                 {
                     strcpy(tempbuf, "Sprite tag 11 (shade): ");
-                    SPRITE_TAG11(searchwall) = getnumber256(tempbuf, SPRITE_TAG11(searchwall), 65536L, 0);
+                    SPRITE_TAG11(searchwall) = getnumber256(tempbuf, SPRITE_TAG11(searchwall), 127, 1);
                 }
                 else
                 {
                     strcpy(tempbuf, "Sprite tag 1 (hitag): ");
-                    SPRITE_TAG1(searchwall) = getnumber256(tempbuf, SPRITE_TAG1(searchwall), 65536L, 0);
+                    SPRITE_TAG1(searchwall) = getnumber256(tempbuf, SPRITE_TAG1(searchwall), 65536L, 1);
                 }
                 message(" ");
             }
@@ -5128,7 +5212,7 @@ static void Keys3d(void)
                 if (eitherSHIFT) 
                 {
                     strcpy(tempbuf, "Sprite tag 12 (pal): ");
-                    SPRITE_TAG12(searchwall) = getnumber256(tempbuf, SPRITE_TAG12(searchwall), 65536L, 0);
+                    SPRITE_TAG12(searchwall) = getnumber256(tempbuf, SPRITE_TAG12(searchwall), 127, 0);
                 }
                 else
                 {
@@ -5137,7 +5221,7 @@ static void Keys3d(void)
                     {
                         int16_t oldtag = sprite[searchwall].lotag;
                     
-                        SPRITE_TAG2(searchwall) = _getnumber256(tempbuf, SPRITE_TAG2(searchwall), 65536L, 0, (void *)MusicAndSFXTagText);
+                        SPRITE_TAG2(searchwall) = _getnumber256(tempbuf, SPRITE_TAG2(searchwall), 65536L, 1, (void *)MusicAndSFXTagText);
                     
                         if ((sprite[searchwall].filler&1) && sprite[searchwall].lotag != oldtag)
                         {
@@ -5147,7 +5231,7 @@ static void Keys3d(void)
                         }
                     }
                     else
-                        SPRITE_TAG2(searchwall) = getnumber256(tempbuf, SPRITE_TAG2(searchwall), 65536L, 0);
+                        SPRITE_TAG2(searchwall) = getnumber256(tempbuf, SPRITE_TAG2(searchwall), 65536L, 1);
                 }
                 message(" ");
             }
@@ -5159,13 +5243,13 @@ static void Keys3d(void)
                 if (eitherSHIFT) 
                 {
                     strcpy(tempbuf, "Sprite tag 13 (xoffset/yoffset): ");
-                    i = getnumber256(tempbuf, SPRITE_TAG13(searchwall), 65536L, 0);
+                    i = getnumber256(tempbuf, SPRITE_TAG13(searchwall), 65536L, 1);
                     SET_SPRITE_TAG13(searchwall, i);
                 }
                 else
                 {
                     strcpy(tempbuf, "Sprite tag 3 (clipdist) : ");
-                    SPRITE_TAG3(searchwall) = getnumber256(tempbuf, SPRITE_TAG3(searchwall), 65536L, 0);
+                    SPRITE_TAG3(searchwall) = getnumber256(tempbuf, SPRITE_TAG3(searchwall), 127, 1);
                 }
                 message(" ");
             }
@@ -5177,13 +5261,13 @@ static void Keys3d(void)
                 if (eitherSHIFT) 
                 {
                     strcpy(tempbuf, "Sprite tag 14 (xrepeat/yrepeat): ");
-                    i = getnumber256(tempbuf, SPRITE_TAG14(searchwall), 65536L, 0);
+                    i = getnumber256(tempbuf, SPRITE_TAG14(searchwall), 65536L, 1);
                     SET_SPRITE_TAG14(searchwall, i);
                 }
                 else
                 {
                     strcpy(tempbuf, "Sprite tag 4 (ang) : ");
-                    SPRITE_TAG4(searchwall) = getnumber256(tempbuf, SPRITE_TAG4(searchwall), 65536L, 0);
+                    SPRITE_TAG4(searchwall) = getnumber256(tempbuf, SPRITE_TAG4(searchwall), 2047, 1);
                 }
                 message(" ");
             }
@@ -5195,12 +5279,12 @@ static void Keys3d(void)
                 if (eitherSHIFT) 
                 {
                     strcpy(tempbuf, "Sprite tag 15 (z): ");
-                    SPRITE_TAG15(searchwall) = getnumber256(tempbuf, SPRITE_TAG15(searchwall), 65536L, 0);
+                    SPRITE_TAG15(searchwall) = getnumber256(tempbuf, SPRITE_TAG15(searchwall), 65536L, 1);
                 }
                 else
                 {
                     strcpy(tempbuf, "Sprite tag 5 (xvel) : ");
-                    SPRITE_TAG5(searchwall) = getnumber256(tempbuf, SPRITE_TAG5(searchwall), 65536L, 0);
+                    SPRITE_TAG5(searchwall) = getnumber256(tempbuf, SPRITE_TAG5(searchwall), 65536L, 1);
                 }
                 message(" ");
             }
@@ -5210,7 +5294,7 @@ static void Keys3d(void)
             if (searchstat == 3) 
             {          
                 strcpy(tempbuf, "Sprite tag 6 (yvel) : ");
-                SPRITE_TAG6(searchwall) = getnumber256(tempbuf, SPRITE_TAG6(searchwall), 65536L, 0);
+                SPRITE_TAG6(searchwall) = getnumber256(tempbuf, SPRITE_TAG6(searchwall), 65536L, 1);
                 message(" ");
             }
         }
@@ -5219,7 +5303,7 @@ static void Keys3d(void)
             if (searchstat == 3) 
             {          
                 strcpy(tempbuf, "Sprite tag 7 (zvel 1) <0-255> : ");
-                SPRITE_TAG7(searchwall) = getnumber256(tempbuf, SPRITE_TAG7(searchwall), 65536L, 0);
+                SPRITE_TAG7(searchwall) = getnumber256(tempbuf, SPRITE_TAG7(searchwall),  255, 1);
                 message(" ");
             }
         }
@@ -5228,7 +5312,7 @@ static void Keys3d(void)
             if (searchstat == 3) 
             {          
                 strcpy(tempbuf, "Sprite tag 8 (zvel 2) <0-255> : ");
-                SPRITE_TAG8(searchwall) = getnumber256(tempbuf, SPRITE_TAG8(searchwall), 65536L, 0);
+                SPRITE_TAG8(searchwall) = getnumber256(tempbuf, SPRITE_TAG8(searchwall), 255, 1);
                 message(" ");
             }
         }
@@ -5237,7 +5321,7 @@ static void Keys3d(void)
             if (searchstat == 3) 
             {          
                 strcpy(tempbuf, "Sprite tag 9 (owner 1) <0-255> : ");
-                SPRITE_TAG9(searchwall) = getnumber256(tempbuf, SPRITE_TAG9(searchwall), 65536L, 0);
+                SPRITE_TAG9(searchwall) = getnumber256(tempbuf, SPRITE_TAG9(searchwall), 255, 1);
                 message(" ");
             }
         }
@@ -5246,7 +5330,7 @@ static void Keys3d(void)
             if (searchstat == 3) 
             {          
                 strcpy(tempbuf, "Sprite tag 10 (owner 2) <0-255> : ");
-                SPRITE_TAG10(searchwall) = getnumber256(tempbuf, SPRITE_TAG10(searchwall), 65536L, 0);
+                SPRITE_TAG10(searchwall) = getnumber256(tempbuf, SPRITE_TAG10(searchwall), 255, 1);
                 message(" ");
             }
         }
@@ -5541,6 +5625,11 @@ static void Keys3d(void)
                 {
                     sprite[searchwall].hitag =
                         _getnumber256("Sprite hitag: ", sprite[searchwall].hitag, BTAG_MAX, 0, (void *)SectorEffectorTagText);
+                }
+                else 
+                {
+                    sprite[searchwall].hitag =
+                        _getnumber256("Sprite hitag: ", sprite[searchwall].hitag, BTAG_MAX, 0, NULL);
                 }
             }
             else if (ASSERT_AIMING)
@@ -10836,7 +10925,7 @@ static void EditSectorData(int16_t sectnum)
         {
             if (row < rowmax)
             {
-                printext16(xpos,ypos+row*8,editorcolors[11],editorcolors[0],disptext,0);
+                printext16(xpos,ypos+row*8,editorcolors[1],editorcolors[0],disptext,0);
                 row++;
             }
         }
@@ -10844,7 +10933,7 @@ static void EditSectorData(int16_t sectnum)
         {
             if (row > 0)
             {
-                printext16(xpos,ypos+row*8,editorcolors[11],editorcolors[0],disptext,0);
+                printext16(xpos,ypos+row*8,editorcolors[1],editorcolors[0],disptext,0);
                 row--;
             }
         }
@@ -10852,7 +10941,7 @@ static void EditSectorData(int16_t sectnum)
         {
             if (col == 2)
             {
-                printext16(xpos,ypos+row*8,editorcolors[11],editorcolors[0],disptext,0);
+                printext16(xpos,ypos+row*8,editorcolors[1],editorcolors[0],disptext,0);
                 col = 1;
                 xpos = 208;
                 rowmax = 6;
@@ -10865,7 +10954,7 @@ static void EditSectorData(int16_t sectnum)
         {
             if (col == 1)
             {
-                printext16(xpos,ypos+row*8,editorcolors[11],editorcolors[0],disptext,0);
+                printext16(xpos,ypos+row*8,editorcolors[1],editorcolors[0],disptext,0);
                 col = 2;
                 xpos = 408;
                 rowmax = 6;
@@ -11029,14 +11118,14 @@ static void EditSectorData(int16_t sectnum)
                 break;
             }
         }
-        printext16(xpos,ypos+row*8,editorcolors[11],editorcolors[1],disptext,0);
+        printext16(xpos,ypos+row*8,editorcolors[10],editorcolors[1],disptext,0);
         if (editval)
         {
             editval = 0;
         }
         showframe(1);
     }
-    printext16(xpos,ypos+row*8,editorcolors[11],editorcolors[0],disptext,0);
+    printext16(xpos,ypos+row*8,editorcolors[1],editorcolors[0],disptext,0);
     // printmessage16("");
     enddrawing();
     showframe(1);
@@ -11067,7 +11156,7 @@ static void EditWallData(int16_t wallnum)
         {
             if (row < 6)
             {
-                printext16(xpos,ypos+row*8,editorcolors[11],editorcolors[0],disptext,0);
+                printext16(xpos,ypos+row*8,editorcolors[1],editorcolors[0],disptext,0);
                 row++;
             }
         }
@@ -11075,7 +11164,7 @@ static void EditWallData(int16_t wallnum)
         {
             if (row > 0)
             {
-                printext16(xpos,ypos+row*8,editorcolors[11],editorcolors[0],disptext,0);
+                printext16(xpos,ypos+row*8,editorcolors[1],editorcolors[0],disptext,0);
                 row--;
             }
         }
@@ -11155,7 +11244,7 @@ static void EditWallData(int16_t wallnum)
             }
             break;
         }
-        printext16(xpos,ypos+row*8,editorcolors[11],editorcolors[1],disptext,0);
+        printext16(xpos,ypos+row*8,editorcolors[10],editorcolors[1],disptext,0);
         if (editval)
         {
             editval = 0;
@@ -11166,7 +11255,7 @@ static void EditWallData(int16_t wallnum)
         showframe(1);
     }
     //begindrawing();
-    printext16(xpos,ypos+row*8,editorcolors[11],editorcolors[0],disptext,0);
+    printext16(xpos,ypos+row*8,editorcolors[1],editorcolors[0],disptext,0);
     // printmessage16("");
     enddrawing();
     showframe(1);
@@ -11201,7 +11290,7 @@ static void EditSpriteData(int16_t spritenum)
         {
             if (row < rowmax)
             {
-                printext16(xpos,ypos+row*8,editorcolors[11],editorcolors[0],disptext,0);
+                printext16(xpos,ypos+row*8,editorcolors[1],editorcolors[0],disptext,0);
                 row++;
             }
         }
@@ -11209,7 +11298,7 @@ static void EditSpriteData(int16_t spritenum)
         {
             if (row > 0)
             {
-                printext16(xpos,ypos+row*8,editorcolors[11],editorcolors[0],disptext,0);
+                printext16(xpos,ypos+row*8,editorcolors[1],editorcolors[0],disptext,0);
                 row--;
             }
         }
@@ -11219,7 +11308,7 @@ static void EditSpriteData(int16_t spritenum)
             {
             case 1:
             {
-                printext16(xpos,ypos+row*8,editorcolors[11],editorcolors[0],disptext,0);
+                printext16(xpos,ypos+row*8,editorcolors[1],editorcolors[0],disptext,0);
                 col = 0;
                 xpos = 8;
                 rowmax = 4;
@@ -11230,7 +11319,7 @@ static void EditSpriteData(int16_t spritenum)
             break;
             case 2:
             {
-                printext16(xpos,ypos+row*8,editorcolors[11],editorcolors[0],disptext,0);
+                printext16(xpos,ypos+row*8,editorcolors[1],editorcolors[0],disptext,0);
                 col = 1;
                 xpos = 208;
                 rowmax = 5;
@@ -11247,7 +11336,7 @@ static void EditSpriteData(int16_t spritenum)
             {
             case 0:
             {
-                printext16(xpos,ypos+row*8,editorcolors[11],editorcolors[0],disptext,0);
+                printext16(xpos,ypos+row*8,editorcolors[1],editorcolors[0],disptext,0);
                 col = 1;
                 xpos = 208;
                 rowmax = 5;
@@ -11258,7 +11347,7 @@ static void EditSpriteData(int16_t spritenum)
             break;
             case 1:
             {
-                printext16(xpos,ypos+row*8,editorcolors[11],editorcolors[0],disptext,0);
+                printext16(xpos,ypos+row*8,editorcolors[1],editorcolors[0],disptext,0);
                 col = 2;
                 xpos = 408;
                 rowmax = 6;
@@ -11505,7 +11594,7 @@ static void EditSpriteData(int16_t spritenum)
         break;
         }
 
-        printext16(xpos,ypos+row*8,editorcolors[11],editorcolors[1],disptext,0);
+        printext16(xpos,ypos+row*8,editorcolors[10],editorcolors[1],disptext,0);
         if (editval)
         {
             editval = 0;
@@ -11514,7 +11603,7 @@ static void EditSpriteData(int16_t spritenum)
         showframe(1);
     }
     begindrawing();
-    printext16(xpos,ypos+row*8,editorcolors[11],editorcolors[0],disptext,0);
+    printext16(xpos,ypos+row*8,editorcolors[1],editorcolors[0],disptext,0); // F*
     // printmessage16("");
     enddrawing();
     showframe(1);
