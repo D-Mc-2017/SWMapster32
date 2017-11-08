@@ -60,6 +60,7 @@ extern void ExtShowSpriteData(int16_t spritenum);
 extern void ExtEditSectorData(int16_t sectnum);
 extern void ExtEditWallData(int16_t wallnum);
 extern void ExtEditSpriteData(int16_t spritenum);
+extern void ExtEditExtraData(int16_t spritenum);
 extern const char *ExtGetSectorType(int32_t lotag);
 
 extern char spritecol2d[MAXTILES][2];
@@ -2595,14 +2596,14 @@ void overheadeditor(void)
         }
         if (keystatus[0x40])  //F6
         {
-//            keystatus[0x40] = 0;
+            keystatus[0x40] = 0;
 
             if (pointhighlight >= 16384)
             {
                 i = pointhighlight-16384;
 
                 ydim16 = STATUS2DSIZ;
-                ExtShowSpriteData((int16_t)i);
+                ExtEditSpriteData((int16_t)i);
                 ydim16 = ydim-STATUS2DSIZ2;
             }
             else if (linehighlight >= 0)
@@ -2610,13 +2611,7 @@ void overheadeditor(void)
                 i = linehighlight;
 
                 ydim16 = STATUS2DSIZ;
-                ExtShowWallData((int16_t)i);
-                ydim16 = ydim-STATUS2DSIZ2;
-            }
-            else
-            {
-                ydim16 = STATUS2DSIZ;
-                ExtShowWallData((int16_t)0);
+                ExtEditWallData((int16_t)i);
                 ydim16 = ydim-STATUS2DSIZ2;
             }
         }
@@ -2642,15 +2637,7 @@ void overheadeditor(void)
                 i = pointhighlight-16384;
 
                 ydim16 = STATUS2DSIZ;
-                ExtEditSpriteData((int16_t)i);
-                ydim16 = ydim-STATUS2DSIZ2;
-            }
-            else if (linehighlight >= 0)
-            {
-                i = linehighlight;
-
-                ydim16 = STATUS2DSIZ;
-                ExtEditWallData((int16_t)i);
+                ExtEditExtraData((int16_t)i);
                 ydim16 = ydim-STATUS2DSIZ2;
             }
         }
@@ -6544,12 +6531,12 @@ static int32_t menuselect(void)
             {
                 if (dir == findfileshigh)
                 {
-                    if (currentlist == 1) printext16(240,16+9*i,editorcolors[7|8],editorcolors[0],"->",0);
-                    printext16(240+24,16+9*i,editorcolors[7|8],editorcolors[0],dir->name,0);
+                    if (currentlist == 1) printext16(240,16+9*i,editorcolors[1],editorcolors[0],"->",0);
+                    printext16(240+24,16+9*i,editorcolors[1],editorcolors[0],dir->name,0);
                 }
                 else
                 {
-                    printext16(240+24,16+9*i,editorcolors[7],editorcolors[0],dir->name,0);
+                    printext16(240+24,16+9*i,editorcolors[1],editorcolors[0],dir->name,0);
                 }
             }
         }
@@ -7243,7 +7230,7 @@ void showspritedata(int16_t spritenum, int16_t small)
 
     if (small)
     {
-        _printmessage16("^10Sprite %d %s ^O(F8 to edit)",spritenum, ExtGetSpriteCaption(spritenum));
+        _printmessage16("^10Sprite %d %s ^O(F6 to edit)",spritenum, ExtGetSpriteCaption(spritenum)); // F6 now dmc2017
         return;
     }
 

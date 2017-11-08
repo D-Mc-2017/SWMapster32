@@ -13,7 +13,7 @@
 extern "C" {
 #endif
 
-#define VERSION " 1.0.2"
+#define VERSION " 1.0.3"
 
 // Build keys
 #define BK_MOVEFORWARD   0
@@ -106,6 +106,7 @@ extern void ExtShowSpriteData(int16_t spritenum);
 extern void ExtEditSectorData(int16_t sectnum);
 extern void ExtEditWallData(int16_t wallnum);
 extern void ExtEditSpriteData(int16_t spritenum);
+extern void ExtEditExtraData(int16_t spritenum);
 extern const char *ExtGetSectorType(int32_t lotag);
 
 extern int32_t LoadBoard(const char *filename, uint32_t flags);

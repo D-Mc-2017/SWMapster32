@@ -1,7 +1,7 @@
-SWMapster32 V1.0.2:
+SWMapster32 V1.0.3:
 
-Added: ability to enter negative numbers using new tagging in 3D mode
-Fixed: ' & H (hitag) keycombo was broken for sprites in 3D mode
-Added: a few more labels for ST1 hitags greater than 200
-Changed: text colours for F7/F8 (edit sprite/wall/sector data)
-Changed: text for ST1 sprites to include hitag/lotag like DOS Build
+Added: skill/multi tag setting menu F8
+Changed: Mapster32 sprite edit menu key to F6
+Changed: background tiles for console
+Changed: text colour in map loading screen
+Changed: background colour for text on tile selection screen

@@ -109,6 +109,7 @@ void SetGAMEPalette();
 extern int32_t grid, autogrid;
 
 static void EditSpriteData(int16_t spritenum);
+static void EditExtraData(int16_t spritenum);
 static void EditWallData(int16_t wallnum);
 static void EditSectorData(int16_t sectnum);
 static void FuncMenu(void);

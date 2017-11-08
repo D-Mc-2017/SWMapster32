@@ -75,7 +75,7 @@ of the License, or (at your option) any later version.
 
 #include <signal.h>
 
-#define BUILDDATE " 20171104"
+#define BUILDDATE " 20171107"
 
 static int32_t floor_over_floor;
 
@@ -2816,7 +2816,7 @@ void ExtEditWallData(int16_t wallnum)       //F8
 
 static void GenericSpriteSearch(void);
 
-void ExtEditSpriteData(int16_t spritenum)   //F8
+void ExtEditSpriteData(int16_t spritenum)   //F8 // F6 now dmc2017
 {
     if (qsetmode==200)
         return;
@@ -2838,6 +2838,13 @@ void ExtEditSpriteData(int16_t spritenum)   //F8
     }
 #endif
     else EditSpriteData(spritenum);
+}
+
+void ExtEditExtraData(int16_t spritenum)   //F8 dmc2017
+{
+    if (qsetmode==200)
+        return;
+    EditExtraData(spritenum);
 }
 
 static void PrintStatus(const char *string,int32_t num,char x,char y,char color)
@@ -4051,7 +4058,7 @@ static int32_t DrawTiles(int32_t iTopLeft, int32_t iSelected, int32_t nXTiles, i
     // Clear out behind the text for improved visibility.
     //drawline256(0, (ydim-12)<<12, xdim<<12, (ydim-12)<<12, whitecol);
     for (i=ydim-12; i<ydim; i++)
-        drawline256(0, i<<12, xdim<<12, i<<12, (ydim-i));
+        drawline256(0, i<<12, xdim<<12, i<<12, 0);
 
     // Tile number on left.
     Bsprintf(szT, "%d" , idTile);
@@ -8932,15 +8939,13 @@ int32_t GAME_getrowheight(int32_t w)
     return w>>3;
 }
 
-//#define BGTILE 311
-//#define BGTILE 1156
-#define BGTILE 1141	// BIGHOLE
-#define BORDTILE 3250	// VIEWBORDER
+#define BGTILE 6
+#define BORDTILE 2288
 #define BITSTH 1+32+8+16	// high translucency
 #define BITSTL 1+8+16	// low translucency
 #define BITS 8+16+64		// solid
-#define SHADE 16
-#define PALETTE 4
+#define SHADE 20
+#define PALETTE 0
 void GAME_clearbackground(int32_t numcols, int32_t numrows)
 {
     UNREFERENCED_PARAMETER(numcols);
@@ -8973,7 +8978,7 @@ void GAME_clearbackground(int32_t numcols, int32_t numrows)
         ysiz = tilesizx[BORDTILE];
 
         for (x=0; x<=tx2; x++)
-            rotatesprite(x*xsiz<<16,(daydim+ysiz+1)<<16,65536L,1536,BORDTILE,SHADE-12,PALETTE,BITS,0,0,xdim,daydim+ysiz+1);
+            rotatesprite(x*xsiz<<16,(daydim+ysiz+1)<<16,65536L,1536,BORDTILE,SHADE,PALETTE,BITS,0,0,xdim,daydim+ysiz+1);
 
         return;
     }
@@ -11607,6 +11612,84 @@ static void EditSpriteData(int16_t spritenum)
     // printmessage16("");
     enddrawing();
     showframe(1);
+    keystatus[KEYSC_ESC] = 0;
+}
+
+static void EditExtraData(int16_t spritenum)
+{  
+    int32_t xpos = 8, ypos = ydim-STATUS2DSIZ+32;    
+    short data;
+    SPRITEp sp;
+
+    sp = &sprite[spritenum];
+    
+    drawgradient();
+    
+    while (keystatus[KEYSC_ESC] == 0)
+    {
+        idle_waitevent();
+        begindrawing();
+        if (handleevents())
+        {
+            if (quitevent) quitevent = 0;
+        }
+        
+        sprintf(tempbuf, "^10Sprite %d", spritenum);
+        printext16(xpos, ypos-16, 11, -1, tempbuf, 0);
+        sprintf(tempbuf, "^10%s^O", (sp->picnum>=0 && sp->picnum<MAXTILES) ? names[sp->picnum] : "!INVALID!");
+        printext16(xpos+160, ypos-16, 11, -1, tempbuf, 0);
+        
+        _printmessage16("Sprite Extra Edit mode, press [1-4] for selection, press [Esc] to exit");
+        
+        
+        printext16(xpos, ypos, 11, -1, "(1)  Skill Level - 0=Easy 1=Normal 2=Hard 3=Crazy", 0);
+        printext16(xpos, ypos + 8, 11, -1, "(2)  Multi-Player Item Toggle", 0);
+        printext16(xpos, ypos + 16, 11, -1, "(-)  -----------", 0);
+        printext16(xpos, ypos + 24, 11, -1, "(4)  Dbug Toggle (* Programming use only *) ", 0);
+    
+        sprintf(tempbuf, "Current attributes for selected sprite:");
+        printext16(xpos, ypos + 40, 11, -1, tempbuf, 0);
+        
+        sprintf(tempbuf, "     Skill = %d", TEST(sp->extra, SPRX_SKILL));
+        printext16(xpos, ypos + 48, 11, -1, tempbuf, 0);
+        
+        sprintf(tempbuf, "     Multi Item = %d", !!TEST(sp->extra, SPRX_MULTI_ITEM));
+        printext16(xpos, ypos + 56, 11, -1, tempbuf, 0);
+        
+        sprintf(tempbuf, "     Debug = %d", !!TEST(sp->extra, SPRX_BLOCK));
+        printext16(xpos, ypos + 64, 11, -1, tempbuf, 0);
+        
+        enddrawing();
+        showframe(1);
+             
+        if (PRESSED_KEYSC(1))
+        {
+            sprintf(tempbuf, "Sprite (%d) Skill Level (0-3) : ", spritenum);            
+            data = TEST(sp->extra, SPRX_SKILL);            
+            data = getnumber16(tempbuf, data, 65536L, 1);            
+            if (data > 3)
+                data = 3;            
+            RESET(sp->extra, SPRX_SKILL);
+            SET(sp->extra, data);
+            drawgradient();
+        }
+        else if (PRESSED_KEYSC(2))
+        {
+            FLIP(sprite[spritenum].extra, SPRX_MULTI_ITEM);
+            drawgradient();
+        }        
+        else if (PRESSED_KEYSC(4))
+        {
+            FLIP(sprite[spritenum].extra, SPRX_BLOCK);
+            drawgradient();
+        }    
+    }
+    
+    begindrawing();
+    printmessage16("");   
+    enddrawing();
+    showframe(1);
+    
     keystatus[KEYSC_ESC] = 0;
 }
 

@@ -47,6 +47,33 @@ typedef spritetype SPRITE, *SPRITEp;
 
 // sprite->extra flags
 // BUILD AND GAME - DO NOT MOVE THESE
+#define SPRX_SKILL              (BIT(0) | BIT(1) | BIT(2))
+
+                                            // BIT(4) ST1 BUILD AND GAME
+#define SPRX_STAY_PUT_VATOR     (BIT(5))    // BUILD AND GAME - will not move with vators etc
+                                            // DO NOT MOVE THIS
+
+#define SPRX_STAG               (BIT(6))    // BUILD AND GAME - NON-ST1 sprite with ST1 type tagging
+                                            // DO NOT MOVE
+
+#define SPRX_QUEUE_SPRITE       (BIT(7))    // Queue sprite -check queue when deleting
+#define SPRX_MULTI_ITEM         (BIT(9))    // BUILD AND GAME - multi player item
+
+// have users - could be moved
+#define SPRX_PLAYER_OR_ENEMY    (BIT(11))   // for checking quickly if sprite is a
+                                            // player or actor
+// do not need Users
+#define SPRX_FOUND              (BIT(12))   // BUILD ONLY INTERNAL - used for finding sprites
+#define SPRX_BLADE              (BIT(12))   // blade sprite
+#define SPRX_BREAKABLE          (BIT(13))   // breakable items
+#define SPRX_BURNABLE           (BIT(14))   // used for burnable sprites in the game
+
+// temp use
+#define SPRX_BLOCK              (BIT(15))   // BUILD AND GAME
+                                            // BUILD - tell which actors should not spawn
+                                            // GAME - used for internal game code
+                                            // ALT-M debug mode
+                                            
 // Defines for reading in ST1 sprite tagging
 #define SP_TAG1(sp) ((sp)->hitag)
 #define SP_TAG2(sp) ((sp)->lotag)
