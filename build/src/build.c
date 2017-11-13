@@ -1103,7 +1103,7 @@ void editinput(void)
                 sprite[i].clipdist = 32;
                 sprite[i].lotag = 0;
                 sprite[i].hitag = 0;
-                sprite[i].extra = -1;
+                sprite[i].extra = 2; // -1; dmc2017
 
                 Bmemset(localartfreq, 0, sizeof(localartfreq));
                 for (k=0; k<MAXSPRITES; k++)
@@ -4071,7 +4071,7 @@ SKIP:
                 sprite[i].clipdist = 32;
                 sprite[i].lotag = 0;
                 sprite[i].hitag = 0;
-                sprite[i].extra = -1;
+                sprite[i].extra = 2; // -1; dmc2017
 
                 sprite[i].z = getflorzofslope(sucksect,dax,day);
                 if ((sprite[i].cstat&128) != 0)
@@ -7181,7 +7181,7 @@ void showwalldata(int16_t wallnum, int16_t small)
 
     if (small)
     {
-        _printmessage16("^10Wall %d %s ^O(F8 to edit)", wallnum, ExtGetWallCaption(wallnum));
+        _printmessage16("^10Wall %d %s ^O(F6 to edit)", wallnum, ExtGetWallCaption(wallnum));
         return;
     }
 

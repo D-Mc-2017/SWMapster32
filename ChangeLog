@@ -1,7 +1,5 @@
-SWMapster32 V1.0.3:
+SWMapster32 V1.0.4:
 
-Added: skill/multi tag setting menu F8
-Changed: Mapster32 sprite edit menu key to F6
-Changed: background tiles for console
-Changed: text colour in map loading screen
-Changed: background colour for text on tile selection screen
+Changed: default extra set to 2 for inserted sprites
+Added: skill and multi tags in overhead editor
+Changed: sprite colour in overhead editor

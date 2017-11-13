@@ -75,7 +75,7 @@ of the License, or (at your option) any later version.
 
 #include <signal.h>
 
-#define BUILDDATE " 20171107"
+#define BUILDDATE " 20171112"
 
 static int32_t floor_over_floor;
 
@@ -1279,9 +1279,9 @@ const char *ExtGetSpriteCaption(int16_t spritenum)
         SpriteName(spritenum,lo);
         if (lo[0]!=0)
         {
-            // if (sprite[spritenum].pal==1) Bsprintf(tempbuf,"%s (MULTIPLAYER)",lo);
-            // else Bsprintf(tempbuf,"%s",lo);
-            Bsprintf(tempbuf,"%s",lo);
+            int data = TEST(sprite[spritenum].extra, SPRX_SKILL);
+            if (TEST(sprite[spritenum].extra, SPRX_MULTI_ITEM)) Bsprintf(tempbuf,"%d, %s, MULTI,",data,lo);
+            else Bsprintf(tempbuf,"%d, %s",data, lo);
         }
     }
 //    else if (sprite[spritenum].picnum==SECTOREFFECTOR)
@@ -4061,9 +4061,17 @@ static int32_t DrawTiles(int32_t iTopLeft, int32_t iSelected, int32_t nXTiles, i
         drawline256(0, i<<12, xdim<<12, i<<12, 0);
 
     // Tile number on left.
-    Bsprintf(szT, "%d" , idTile);
-    printext256(1, ydim-10, whitecol, -1, szT, 0);
-
+    if (Bstrlen(names[idTile])>0)
+    {
+        Bsprintf(szT, "%d - %s" , idTile,names[idTile]);
+        printext256(1,ydim-10,-1,whitecol,szT,0);
+    }
+    else
+    {    
+        Bsprintf(szT, "%d" , idTile);
+        printext256(1, ydim-10, whitecol,-1, szT, 0);
+    }
+        
     // Tile name on right.
     printext256(xdim-(Bstrlen(names[idTile])<<3)-1,ydim-10,whitecol,-1,names[idTile],0);
 
@@ -7987,7 +7995,7 @@ static void InitCustomColors(void) // dmc2017
     editorcolors[0] = getclosestcol(0,0,0); // tag text		
     editorcolors[1] = getclosestcol(63,63,63); // ??		
     editorcolors[2] = getclosestcol(42,21,0); // start pos	****	
-    editorcolors[3] = getclosestcol(36,54,24); // sprites	****	
+    editorcolors[3] = getclosestcol(33,39,48); // sprites	****	
     editorcolors[4] = getclosestcol(0,0,0); // text shadows?	    
     editorcolors[5] = getclosestcol(25,12,28); //  blocking sprites and walls ****		
     editorcolors[7] = getclosestcol(16,16,16); //  white wall highlight	
@@ -8003,13 +8011,6 @@ static void InitCustomColors(void) // dmc2017
     editorcolors[33] = getclosestcol(42,0,0); // redwalls	    
     editorcolors[41] = getclosestcol(55,48,45); // redwall - mouse highlight 
     editorcolors[42] = getclosestcol(0,42,0); // drawcircle16 engine.c // verts
-
-// 
-//     int32_t i;
-// 	for (i = 0; i<48; i++)
-// 	{
-// 		editorcolors[i] = getclosestcol(63,0,0);
-// 	}	
 }
 
 void ExtPreSaveMap(void)
