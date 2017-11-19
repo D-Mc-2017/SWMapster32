@@ -1065,7 +1065,7 @@ void editinput(void)
     searchit = 2;
     if (searchstat >= 0)
     {
-        if ((bstatus&(1|2|4)) > 0)
+        if ((bstatus&(1|2|4)) || keystatus[0x39])  // spacebar
             searchit = 0;
 
         if (keystatus[0x1f])  //S (insert sprite) (3D)
@@ -1103,7 +1103,7 @@ void editinput(void)
                 sprite[i].clipdist = 32;
                 sprite[i].lotag = 0;
                 sprite[i].hitag = 0;
-                sprite[i].extra = 2; // -1; dmc2017
+                sprite[i].extra = -1;
 
                 Bmemset(localartfreq, 0, sizeof(localartfreq));
                 for (k=0; k<MAXSPRITES; k++)
@@ -2145,7 +2145,7 @@ void overheadeditor(void)
                                         col = spritecol2d[sprite[i].picnum][blocking];
 
                                     if ((i == pointhighlight-16384) && (totalclock & 32))
-                                        col += (2<<2); // [+8=11or13] if highlighted
+                                        col = 2 + 12*blocking;
 
                                     printext16(x1,y1,editorcolors[0],editorcolors[col],dabuffer,1);
 
@@ -4071,7 +4071,7 @@ SKIP:
                 sprite[i].clipdist = 32;
                 sprite[i].lotag = 0;
                 sprite[i].hitag = 0;
-                sprite[i].extra = 2; // -1; dmc2017
+                sprite[i].extra = -1;
 
                 sprite[i].z = getflorzofslope(sucksect,dax,day);
                 if ((sprite[i].cstat&128) != 0)

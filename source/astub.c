@@ -75,7 +75,7 @@ of the License, or (at your option) any later version.
 
 #include <signal.h>
 
-#define BUILDDATE " 20171112"
+#define BUILDDATE " 20171118"
 
 static int32_t floor_over_floor;
 
@@ -132,6 +132,9 @@ static void fixxrepeat(int16_t i, uint32_t lenrepquot)
     if (lenrepquot != 0)
         wall[i].xrepeat = clamp(divscale12(wallength(i), lenrepquot), 1, 255);
 }
+
+long loaded_numwalls;   
+int bAutoSize = 1;                  // Autosizing on/off
 
 //////////////////// Key stuff ////////////////////
 
@@ -612,66 +615,85 @@ static int32_t getfilenames(const char *path, const char *kind)
     return(0);
 }
 
+void SetSpriteExtra(void)
+{
+    SPRITEp sp;
+    int i;
+    
+#define DEFAULT_SKILL 2
+
+    // for (sp = sprite; sp < &sprite[MAXSPRITES]; sp++)
+    for (sp = sprite; sp < &sprite[MAXSPRITES]; sp++)
+    {
+        if (sp->picnum == ST1)
+        {
+            if (sp->owner == -1) sp->owner = 0;
+        }    
+        else
+        {
+            sp->owner = -1;
+        }
+            
+        if (sp->extra == -1)
+        {
+            sp->extra = 0;
+            SET(sp->extra, DEFAULT_SKILL);
+        }
+    }
+
+    // loaded_numwalls is what numwalls is after a load
+    // only new walls get their extra's set    
+    if (loaded_numwalls != numwalls)
+    {
+        for (i = 0; i < numwalls; i++)
+        {
+            if (wall[i].extra != 0) wall[i].extra = 0;
+        }
+    }    
+    loaded_numwalls = numwalls;    
+}
+
 void ExtLoadMap(const char *mapname)
 {
     int32_t i;
     int32_t sky=0;
-	
+    
+    SetSpriteExtra();
 
     getmessageleng = 0;
     getmessagetimeoff = 0;
 
     Bstrcpy(levelname,mapname);
+    
     pskyoff[0]=0;
     for (i=0; i<8; i++) pskyoff[i]=0;
-
-    /*/ // removed NAMES.H 10-16-17 // dmc2017
-    for (i=0; i<numsectors; i++)
-    {
-        switch (sector[i].ceilingpicnum)
-        {
-        case MOONSKY1 :
-        case BIGORBIT1 : // orbit
-        case LA : // la city
-            sky=sector[i].ceilingpicnum;
-            break;
-        }
-    }
-
-    switch (sky)
-    {
-    case MOONSKY1 :
-        //        earth          mountian   mountain         sun
-        pskyoff[6]=1;
-        pskyoff[1]=2;
-        pskyoff[4]=2;
-        pskyoff[2]=3;
-        break;
-
-    case BIGORBIT1 : // orbit
-        //       earth1         2           3           moon/sun
-        pskyoff[5]=1;
-        pskyoff[6]=2;
-        pskyoff[7]=3;
-        pskyoff[2]=4;
-        break;
-
-    case LA : // la city
-        //       earth1         2           3           moon/sun
-        pskyoff[0]=1;
-        pskyoff[1]=2;
-        pskyoff[2]=1;
-        pskyoff[3]=3;
-        pskyoff[4]=4;
-        pskyoff[5]=0;
-        pskyoff[6]=2;
-        pskyoff[7]=3;
-        break;
-    }
-    /*/ // removed NAMES.H 10-16-17 // dmc2017
-
-    pskybits=3;
+    pskybits=0;
     parallaxtype=0;
+    parallaxyscale=8196;
+    
+    // for (i=0; i<numsectors; i++)
+    // {
+    //     switch (sector[i].ceilingpicnum)
+    //     {
+    //     case 187 :
+    //         sky=sector[i].ceilingpicnum;
+    //         break;
+    //     }
+    // }    
+    //
+    // switch (sky)
+    // {
+    // case 187 :
+    //     pskyoff[0]=0;
+    //     pskybits=0;
+    //     parallaxtype=0;
+    //     parallaxyscale=8196;
+    //     break;
+    // }
+    // see st1 hitag 46 for custom parallax settings 
+        //  lotag = pskybits
+        // if angle (TAG4) > 2048 it sets parallaxyscale 
+    
     Bsprintf(tempbuf, "SWMapster32 - %s",mapname);
 
     map_undoredo_free();
@@ -2818,6 +2840,8 @@ static void GenericSpriteSearch(void);
 
 void ExtEditSpriteData(int16_t spritenum)   //F8 // F6 now dmc2017
 {
+    SetSpriteExtra();
+    
     if (qsetmode==200)
         return;
 
@@ -5202,7 +5226,30 @@ static void Keys3d(void)
     int value; 	
     
     if (keystatus[KEYSC_QUOTE])
-    {
+    {        
+        if (keystatus[KEYSC_K])   // ' K
+        {
+            short data;
+            SPRITEp sp = &sprite[searchwall];
+
+            keystatus[KEYSC_K] = 0;
+            switch (searchstat)
+                {
+            case 3:
+                data = TEST(sp->extra, SPRX_SKILL);
+
+                //data = getnumber256(tempbuf, data, 65536L);
+                data++; // Toggle
+
+                if (data > 3)
+                    data = 0;
+
+                RESET(sp->extra, SPRX_SKILL);
+                SET(sp->extra, data);
+                break;
+                }
+        }
+        
         if (PRESSED_KEYSC(1) && ASSERT_AIMING)
         {
             if (searchstat == 3) 
@@ -5282,7 +5329,7 @@ static void Keys3d(void)
                 else
                 {
                     strcpy(tempbuf, "Sprite tag 4 (ang) : ");
-                    SPRITE_TAG4(searchwall) = getnumber256(tempbuf, SPRITE_TAG4(searchwall), 2047, 1);
+                    SPRITE_TAG4(searchwall) = getnumber256(tempbuf, SPRITE_TAG4(searchwall), 65536L, 1);
                 }
                 message(" ");
             }
@@ -6140,7 +6187,7 @@ static void Keys3d(void)
         Bsprintf(tempbuf,"VIEW");
     else if ((bstatus&(2|1))==2)
         Bsprintf(tempbuf,"Z%s", keystatus[KEYSC_HOME]?" 256":keystatus[KEYSC_END]?" 512":"");
-    else if ((bstatus&(2|1))==1)
+    else if ((bstatus&(2|1)) || keystatus[0x39] == 1)
         Bsprintf(tempbuf,"LOCK");
 
     if (bstatus&1)
@@ -7991,11 +8038,14 @@ static void Keys2d(void)
 }// end key2d
 
 static void InitCustomColors(void) // dmc2017
-{
+{ 
+    // blue - 18,33,35 - 20,26,32 - 33,39,48
+    // yellow - 56,52,22
+    // orange - 42,21,0
     editorcolors[0] = getclosestcol(0,0,0); // tag text		
     editorcolors[1] = getclosestcol(63,63,63); // ??		
     editorcolors[2] = getclosestcol(42,21,0); // start pos	****	
-    editorcolors[3] = getclosestcol(33,39,48); // sprites	****	
+    editorcolors[3] = getclosestcol(18,33,35); // sprites	****	
     editorcolors[4] = getclosestcol(0,0,0); // text shadows?	    
     editorcolors[5] = getclosestcol(25,12,28); //  blocking sprites and walls ****		
     editorcolors[7] = getclosestcol(16,16,16); //  white wall highlight	
@@ -10313,6 +10363,153 @@ void ExtPreCheckKeys(void) // just before drawrooms
     enddrawing();
 }
 
+void DoAutoSize(spritetype * tspr) // modified from jnstub.c in SW source // dmc2017	
+{
+    short i;
+
+    if (bAutoSize==0) return;
+    
+    switch (tspr->picnum)
+    {
+        case STAR:                     // 1793
+            break;
+        case UZI:                      // 1797
+            tspr->xrepeat = 43;
+            tspr->yrepeat = 40;
+            break;
+        case UZIFLOOR:         // 1807
+            tspr->xrepeat = 43;
+            tspr->yrepeat = 40;
+            break;
+        case LG_UZI_AMMO:              // 1799
+            break;
+        case HEART:                    // 1824
+            break;
+        case HEART_LG_AMMO:            // 1820
+            break;
+        case GUARD_HEAD:               // 1814
+            break;
+        case FIREBALL_LG_AMMO: // 3035
+            break;
+        case ROCKET:                   // 1843
+            break;
+        case SHOTGUN:                  // 1794
+            tspr->xrepeat = 57;
+            tspr->yrepeat = 58;
+            break;
+        case LG_ROCKET:                // 1796
+            break;
+        case LG_SHOTSHELL:             // 1823
+            break;
+        case MICRO_GUN:                // 1818
+            break;
+        case MICRO_BATTERY:            // 1800
+            break;
+        case GRENADE_LAUNCHER: // 1817
+            tspr->xrepeat = 54;
+            tspr->yrepeat = 52;
+            break;
+        case LG_GRENADE:               // 1831
+            break;
+        case LG_MINE:                  // 1842
+            break;
+        case RAIL_GUN:         // 1811
+            tspr->xrepeat = 50;
+            tspr->yrepeat = 54;
+            break;
+        case RAIL_AMMO:                // 1812
+            break;
+        case SM_MEDKIT:                // 1802
+            break;
+        case MEDKIT:                   // 1803
+            break;
+        case CHEMBOMB:
+            tspr->xrepeat = 64;
+            tspr->yrepeat = 47;
+            break;
+        case FLASHBOMB:
+            tspr->xrepeat = 32;
+            tspr->yrepeat = 34;
+            break;
+        case NUKE:
+            break;
+        case CALTROPS:
+            tspr->xrepeat = 37;
+            tspr->yrepeat = 30;
+            break;
+        case BOOSTER:                  // 1810
+            tspr->xrepeat = 30;
+            tspr->yrepeat = 38;
+            break;
+        case HEAT_CARD:                // 1819
+            tspr->xrepeat = 46;
+            tspr->yrepeat = 47;
+            break;
+        case REPAIR_KIT:               // 1813
+            break;
+        case EXPLOSIVE_BOX:            // 1801
+            break;
+        case ENVIRON_SUIT:             // 1837
+            break;
+        case FLY:                      // 1782
+            break;
+        case CLOAK:                    // 1826
+            break;
+        case NIGHT_VISION:             // 3031
+            tspr->xrepeat = 59;
+            tspr->yrepeat = 71;
+            break;
+        case NAPALM:                   // 3046
+            break;
+        case RING:                     // 3050
+            break;
+        case RINGAMMO:         // 3054
+            break;
+        case NAPALMAMMO:               // 3058
+            break;
+        case GRENADE:                  // 3059
+            break;
+        case ARMOR:                    // 3030
+            tspr->xrepeat = 82;
+            tspr->yrepeat = 84;
+            break;
+        case BLUE_KEY:                      // 1766
+            break;
+        case RED_KEY:                       // 1770
+            break;
+        case GREEN_KEY:                     // 1774
+            break;
+        case YELLOW_KEY:                    // 1778
+            break;
+        case BLUE_CARD:
+        case RED_CARD:
+        case GREEN_CARD:
+        case YELLOW_CARD:
+            tspr->xrepeat = 36;
+            tspr->yrepeat = 33;
+            break;
+        case GOLD_SKELKEY:
+        case SILVER_SKELKEY:
+        case BRONZE_SKELKEY:
+        case RED_SKELKEY:
+            tspr->xrepeat = 39;
+            tspr->yrepeat = 45;
+            break;
+        case SKEL_LOCKED:
+        case SKEL_UNLOCKED:
+            tspr->xrepeat = 47;
+            tspr->yrepeat = 40;
+            break;
+        case RAMCARD_LOCKED:
+        case RAMCARD_UNLOCKED:
+        case CARD_LOCKED:
+        case CARD_UNLOCKED:
+            break;
+        default:
+            break;
+    }
+}
+
 void ExtAnalyzeSprites(void)
 {
     int32_t i, k;
@@ -10322,8 +10519,11 @@ void ExtAnalyzeSprites(void)
     for (i=0,tspr=&tsprite[0]; i<spritesortcnt; i++,tspr++)
     {
         frames=0;
+        
+        // Take care of autosizing
+        DoAutoSize(tspr);
 
-        if ((nosprites==1||nosprites==3)&&tspr->picnum<11) tspr->xrepeat=0;
+        // if ((nosprites==1||nosprites==3)&&tspr->picnum<11) tspr->xrepeat=0;
         
     /*/ // removed NAMES.H 10-16-17 // dmc2017
         if (nosprites==1||nosprites==3)
@@ -10485,17 +10685,31 @@ static void Keys2d3d(void)
         //        mapstate = mapstate->prev;
     }
 
-    if (keystatus[KEYSC_QUOTE] && PRESSED_KEYSC(A)) // 'A
-    {
-        if (qsetmode == 200)
-            autosave = autosave?0:getnumber256("Autosave interval, in seconds: ",180,3600,0);
+    if (keystatus[KEYSC_QUOTE] && PRESSED_KEYSC(A)) // ' A
+        if (eitherALT)
+        {
+            if (qsetmode == 200)
+                autosave = autosave?0:getnumber256("Autosave interval, in seconds: ",180,3600,0);
+            else
+                autosave = autosave?0:getnumber16("Autosave interval, in seconds: ",180,3600,0);
+        
+            if (autosave) message("Autosave enabled, interval: %d seconds",autosave);
+            else message("Autosave disabled");
+        }
         else
-            autosave = autosave?0:getnumber16("Autosave interval, in seconds: ",180,3600,0);
-
-        if (autosave) message("Autosave enabled, interval: %d seconds",autosave);
-        else message("Autosave disabled");
-    }
-
+        {
+            if (bAutoSize==1)
+            {
+                bAutoSize=0; 
+                message("Autosize turned off.");
+            }    
+            else 
+            {
+                bAutoSize=1;
+                message("Autosize turned on.");
+            }
+        }
+    
     if (keystatus[KEYSC_QUOTE] && PRESSED_KEYSC(N)) // 'N
     {
         noclip = !noclip;
@@ -10594,6 +10808,8 @@ void ExtCheckKeys(void)
 {
     static int32_t soundinit = 0;
     static int32_t lastbstatus = 0;
+    
+    SetSpriteExtra();
 
     if (!soundinit)
     {

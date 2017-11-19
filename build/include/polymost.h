@@ -118,7 +118,7 @@ extern double gyxscale, gxyaspect, gviewxrange, ghalfx, grhalfxdown10, grhalfxdo
 extern double gcosang, gsinang, gcosang2, gsinang2;
 extern double gchang, gshang, gctang, gstang, gvisibility;
 
-#define FOGSCALE 0.0000768
+#define FOGSCALE 0.0000384 // 0.0000768 dmc2017
 
 extern float fogresult, fogcol[4], fogtable[4*MAXPALOOKUPS];
 

@@ -199,7 +199,7 @@ static char ptempbuf[MAXWALLSB<<1];
 
 // polymost ART sky control
 int32_t r_parallaxskyclamping = 1;
-int32_t r_parallaxskypanning = 0;
+int32_t r_parallaxskypanning = 1; // 0; dmc2017
 
 extern int16_t editstatus;
 
@@ -574,13 +574,21 @@ void polymost_glreset()
     int32_t i;
     pthtyp *pth, *next;
 
-    for (i=MAXPALOOKUPS-1; i>=0; i--)
-    {
-        fogtable[i<<2] = palookupfog[i].r / 63.f;
-        fogtable[(i<<2)+1] = palookupfog[i].g / 63.f;
-        fogtable[(i<<2)+2] = palookupfog[i].b / 63.f;
-        fogtable[(i<<2)+3] = 0;
-    }
+    //for (i=MAXPALOOKUPS-1; i>=0; i--) //hardcoded glfog dmc2017
+        fogtable[1<<2] = 0.4f; 
+        fogtable[(1<<2)+1] = 0.4f;
+        fogtable[(1<<2)+2] = 0.4f;
+        fogtable[(1<<2)+3] = 0;
+        
+        fogtable[5<<2] = 0.4f; 
+        fogtable[(5<<2)+1] = 0.1f;
+        fogtable[(5<<2)+2] = 0.1f;
+        fogtable[(5<<2)+3] = 0;
+        
+        fogtable[9<<2] = 0.1f; 
+        fogtable[(9<<2)+1] = 0.1f;
+        fogtable[(9<<2)+2] = 0.4f;
+        fogtable[(9<<2)+3] = 0;
 
     //Reset if this is -1 (meaning 1st texture call ever), or > 0 (textures in memory)
     if (gltexcacnum < 0)
