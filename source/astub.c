@@ -75,7 +75,7 @@ of the License, or (at your option) any later version.
 
 #include <signal.h>
 
-#define BUILDDATE " 20171118"
+#define BUILDDATE " 20171119"
 
 static int32_t floor_over_floor;
 
@@ -1157,6 +1157,236 @@ const char *SectorEffectorTagText(int32_t hitag) // dmc2017
     return (tempbuf);
 }
 
+const char *TrackTagText(int32_t lotag, int32_t picnum) // dmc2017
+{
+    static char tempbuf[64];
+    switch (lotag)
+    {       
+    case 1:  
+        Bsprintf(tempbuf,"T%d, TT_ROUTE", picnum-1900);
+        break;       
+    case 2:  
+        Bsprintf(tempbuf,"T%d, TT_JUMP_UP", picnum-1900);
+        break;  
+    case 3:  
+        Bsprintf(tempbuf,"T%d, TT_JUMP_DOWN", picnum-1900);
+        break;   
+    case 4:  
+        Bsprintf(tempbuf,"T%d, TT_JUMP_BOTH", picnum-1900);
+        break;    
+    case 5:  
+        Bsprintf(tempbuf,"T%d, TT_LADDER", picnum-1900);
+        break;  
+    case 6:  
+        Bsprintf(tempbuf,"T%d, TT_STAIRS", picnum-1900);
+        break;
+    case 7:  
+        Bsprintf(tempbuf,"T%d, TT_TRAVERSE", picnum-1900);
+        break;
+    case 8:  
+        Bsprintf(tempbuf,"T%d, TT_DUCK_N_SHOOT", picnum-1900);
+        break;
+    case 9:  
+        Bsprintf(tempbuf,"T%d, TT_HIDE_N_SHOOT", picnum-1900);
+        break;
+    case 10: 
+        Bsprintf(tempbuf,"T%d, TT_EXIT", picnum-1900);
+        break;    
+    case 11: 
+        Bsprintf(tempbuf,"T%d, TT_WANDER", picnum-1900);
+        break;     
+    case 12: 
+        Bsprintf(tempbuf,"T%d, TT_SCAN", picnum-1900);
+        break;    
+    case 13: 
+        Bsprintf(tempbuf,"T%d, TT_SUPER_JUMP_UP", picnum-1900);
+        break;
+    case 14: 
+        Bsprintf(tempbuf,"T%d, TT_OPERATE", picnum-1900);
+        break;    
+        
+    case 700:
+        Bsprintf(tempbuf,"T%d, T_START", picnum-1900);
+        break;
+    case 701:
+        Bsprintf(tempbuf,"T%d, T_END", picnum-1900);
+        break; 
+    case 702:
+        Bsprintf(tempbuf,"T%d, T_SET_SPEED", picnum-1900);
+        break;
+    case 703:
+        Bsprintf(tempbuf,"T%d, T_STOP", picnum-1900);
+        break;
+    case 704:
+        Bsprintf(tempbuf,"T%d, T_REVERSE", picnum-1900);
+        break;    
+    case 705:
+        Bsprintf(tempbuf,"T%d, T_SPEED_UP", picnum-1900);
+        break;    
+    case 706:
+        Bsprintf(tempbuf,"T%d, T_SLOW_DOWN", picnum-1900);
+        break;    
+    case 707:
+        Bsprintf(tempbuf,"T%d, T_VEL_RATE", picnum-1900);
+        break;   
+    case 709:
+        Bsprintf(tempbuf,"T%d, T_ZUP", picnum-1900);
+        break;
+    case 710:
+        Bsprintf(tempbuf,"T%d, T_ZDOWN", picnum-1900);
+        break;
+    case 711:
+        Bsprintf(tempbuf,"T%d, T_ZRATE", picnum-1900);
+        break;
+    case 712:
+        Bsprintf(tempbuf,"T%d, T_ZDIFF_MODE", picnum-1900);
+        break;
+    case 715:
+        Bsprintf(tempbuf,"T%d, T_SPIN", picnum-1900);
+        break;
+    case 716:
+        Bsprintf(tempbuf,"T%d, T_SPIN_STOP", picnum-1900);
+        break;
+    case 717:
+        Bsprintf(tempbuf,"T%d, T_BOB_START", picnum-1900);
+        break;
+    case 718:
+        Bsprintf(tempbuf,"T%d, T_BOB_SPEED", picnum-1900);
+        break;
+    case 719:
+        Bsprintf(tempbuf,"T%d, T_BOB_STOP", picnum-1900);
+        break;
+    case 720:
+        Bsprintf(tempbuf,"T%d, T_SPIN_REVERSE", picnum-1900);
+        break;
+    case 723:
+        Bsprintf(tempbuf,"T%d, T_SO_SINK", picnum-1900);
+        break;
+    case 724:
+        Bsprintf(tempbuf,"T%d, T_SO_FORM_WHIRLPOOL", picnum-1900);
+        break;
+    case 725:
+        Bsprintf(tempbuf,"T%d, T_MOVE_VERTICAL", picnum-1900);
+        break;
+    case 726:
+        Bsprintf(tempbuf,"T%d, T_WAIT_FOR_EVENT", picnum-1900);
+        break;
+    case 728:
+        Bsprintf(tempbuf,"T%d, T_MATCH_EVERYTHING", picnum-1900);
+        break;        
+    case 729:
+        Bsprintf(tempbuf,"T%d, T_MATCH_EVERYTHING_ONCE", picnum-1900);
+        break;
+    case 750:
+        Bsprintf(tempbuf,"T%d, TA_SET_SPEED", picnum-1900);
+        break;
+    case 751:
+        Bsprintf(tempbuf,"T%d, TA_STOP", picnum-1900);
+        break;
+    case 752:
+        Bsprintf(tempbuf,"T%d, TA_REVERSE", picnum-1900);
+        break;    
+    case 753:
+        Bsprintf(tempbuf,"T%d, TA_SPEED_UP", picnum-1900);
+        break;    
+    case 754:
+        Bsprintf(tempbuf,"T%d, TA_SLOW_DOWN", picnum-1900);
+        break;    
+    case 755:
+        Bsprintf(tempbuf,"T%d, TA_VEL_RATE", picnum-1900);
+        break;   
+    case 759:
+        Bsprintf(tempbuf,"T%d, TA_ZDIFF_MODE", picnum-1900);
+        break;
+    case 770:
+        Bsprintf(tempbuf,"T%d, TA_STAND", picnum-1900);
+        break;
+    case 771:
+        Bsprintf(tempbuf,"T%d, TA_JUMP", picnum-1900);
+        break;
+    case 772:
+        Bsprintf(tempbuf,"T%d, TA_CRAWL", picnum-1900);
+        break;
+    case 773:
+        Bsprintf(tempbuf,"T%d, TA_SWIM", picnum-1900);
+        break;
+    case 774:
+        Bsprintf(tempbuf,"T%d, TA_FLY", picnum-1900);
+        break;
+    case 776:
+        Bsprintf(tempbuf,"T%d, TA_SIT", picnum-1900);
+        break;
+    case 777:
+        Bsprintf(tempbuf,"T%d, TA_DEATH1", picnum-1900);
+        break;
+    case 778:
+        Bsprintf(tempbuf,"T%d, TA_DEATH2", picnum-1900);
+        break;
+    case 779:
+        Bsprintf(tempbuf,"T%d, TA_DEATH_JUMP", picnum-1900);
+        break;
+    case 780:
+        Bsprintf(tempbuf,"T%d, TA_CLOSE_ATTACK1", picnum-1900);
+        break;
+    case 781:
+        Bsprintf(tempbuf,"T%d, TA_CLOSE_ATTACK2", picnum-1900);
+        break;
+    case 782:
+        Bsprintf(tempbuf,"T%d, TA_ATTACK1", picnum-1900);
+        break;
+    case 783:
+        Bsprintf(tempbuf,"T%d, TA_ATTACK2", picnum-1900);
+        break;
+    case 784:
+        Bsprintf(tempbuf,"T%d, TA_ATTACK3", picnum-1900);
+        break;
+    case 785:
+        Bsprintf(tempbuf,"T%d, TA_ATTACK4", picnum-1900);
+        break;
+    case 786:
+        Bsprintf(tempbuf,"T%d, TA_ATTACK5", picnum-1900);
+        break;
+    case 787:
+        Bsprintf(tempbuf,"T%d, TA_ATTACK6", picnum-1900);
+        break;
+    case 790:
+        Bsprintf(tempbuf,"T%d, TA_LOOK", picnum-1900);
+        break;
+    case 791:
+        Bsprintf(tempbuf,"T%d, TA_OPERATE", picnum-1900);
+        break;
+    case 792:
+        Bsprintf(tempbuf,"T%d, TA_CLIMB_LADDER", picnum-1900);
+        break;
+    case 793:
+        Bsprintf(tempbuf,"T%d, TA_SET_JUMP", picnum-1900);
+        break;
+    case 795:
+        Bsprintf(tempbuf,"T%d, TA_SPECIAL1", picnum-1900);
+        break;
+    case 796:
+        Bsprintf(tempbuf,"T%d, TA_SPECIAL2", picnum-1900);
+        break;
+    case 797:
+        Bsprintf(tempbuf,"T%d, TA_JUMP_IF_FORWARD", picnum-1900);
+        break;
+    case 798:
+        Bsprintf(tempbuf,"T%d, TA_JUMP_IF_REVERSE", picnum-1900);
+        break;
+    case 799:
+        Bsprintf(tempbuf,"T%d, TA_WAIT_FOR_PLAYER", picnum-1900);
+        break;
+    case 800:
+        Bsprintf(tempbuf,"T%d, TA_WAIT_FOR_TRIGGER", picnum-1900);
+        break;
+    default:
+        Bsprintf(tempbuf,"TRACK%d", picnum-1900);
+        break;
+    }
+
+    return (tempbuf);
+}
+
 static int SNUM(int lotag) // sound num swapping for ambient tags // dmc2017
 {
     int snum;
@@ -1279,6 +1509,22 @@ const char *SectorEffectorText(int32_t spritenum)
     return (tempbuf);
 }
 
+const char *TrackText(int32_t spritenum)
+{
+    static char tempbuf[64];
+
+    Bmemset(tempbuf, 0, sizeof(tempbuf));
+    Bmemset(lo, 0, sizeof(lo));
+
+    Bstrcpy(lo, TrackTagText(sprite[spritenum].lotag,sprite[spritenum].picnum)); // dmc2017
+    if (!lo[5]) // tags are 5 chars or less
+        SpriteName(spritenum, tempbuf);
+    else
+        Bsprintf(tempbuf, "%s,%d,%d",lo,(sprite[spritenum].hitag),(sprite[spritenum].lotag));
+
+    return (tempbuf);
+}
+
 const char *ExtGetSpriteCaption(int16_t spritenum)
 {
     static char tempbuf[1024];
@@ -1296,7 +1542,23 @@ const char *ExtGetSpriteCaption(int16_t spritenum)
     if (retfast)
         return(tempbuf);
 
-    if ((sprite[spritenum].lotag|sprite[spritenum].hitag) == 0)
+    if (sprite[spritenum].picnum==ST1) // dmc2017
+    {
+        if (onnames!=8)
+        {
+            Bsprintf(lo,"%s",SectorEffectorText(spritenum));
+            Bsprintf(tempbuf,"%s",lo);
+        }
+    }
+    else if (sprite[spritenum].picnum>=1900 && sprite[spritenum].picnum<=1999)
+    {
+        if (onnames!=8)
+        {
+            Bsprintf(lo,"%s",TrackText(spritenum));
+            Bsprintf(tempbuf,"%s",lo);
+        }
+    }
+    else
     {
         SpriteName(spritenum,lo);
         if (lo[0]!=0)
@@ -1305,30 +1567,6 @@ const char *ExtGetSpriteCaption(int16_t spritenum)
             if (TEST(sprite[spritenum].extra, SPRX_MULTI_ITEM)) Bsprintf(tempbuf,"%d, %s, MULTI,",data,lo);
             else Bsprintf(tempbuf,"%d, %s",data, lo);
         }
-    }
-//    else if (sprite[spritenum].picnum==SECTOREFFECTOR)
-//    {
-//        if (onnames!=8)
-//        {
-//            Bsprintf(lo,"%s",SectorEffectorText(spritenum));
-//            Bsprintf(tempbuf,"%s, %hu",lo,sprite[spritenum].hitag);
-//        }
-//    }
-    else if (sprite[spritenum].picnum==ST1) // dmc2017
-    {
-        if (onnames!=8)
-        {
-            Bsprintf(lo,"%s",SectorEffectorText(spritenum));
-            Bsprintf(tempbuf,"%s",lo);
-        }
-    }
-    else
-    {
-        SpriteName(spritenum,lo);
-        if (sprite[spritenum].extra != -1)
-            Bsprintf(tempbuf,"%hu,%hu,%d %s",sprite[spritenum].hitag,sprite[spritenum].lotag,sprite[spritenum].extra,lo);
-        else
-            Bsprintf(tempbuf,"%hu,%hu %s",sprite[spritenum].hitag,sprite[spritenum].lotag,lo);
     }
 
     return(tempbuf);

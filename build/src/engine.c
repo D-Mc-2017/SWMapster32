@@ -12689,12 +12689,12 @@ static void drawscreen_drawsprite(int32_t j, int32_t posxe, int32_t posye, int32
                                           (!m32_sideview && ((sprite[j].x == sprite[pointhighlight-16384].x) &&
                                                   (sprite[j].y == sprite[pointhighlight-16384].y)))))
         {
-            if (totalclock & 32) col += 8;
+            if (totalclock & 32) col = 2 + 12*(sprite[j].cstat&1);
         }
         else // if (highlightcnt > 0)
         {
             if (show2dsprite[j>>3]&pow2char[j&7])
-                if (totalclock & 32) col += 8;
+                if (totalclock & 32) col = 2 + 12*(sprite[j].cstat&1);
         }
     }
 

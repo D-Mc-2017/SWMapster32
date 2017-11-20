@@ -1,9 +1,3 @@
-SWMapster32 V1.0.5:
+SWMapster32 V1.0.6:
 
-Added: sprite auto-size to match game code
-Added: 'A keycombo to toggle auto-size
-Changed: autosave toggle from 'A to ' ALT A
-Added: SetSpriteExtra function 
-Changed: default sprite extra to -1 again
-Added: 'K keycombo to set sprite skill level
-Changed: pskycode and fogtables
+Added: track sprite tag text similar to st1 labels
