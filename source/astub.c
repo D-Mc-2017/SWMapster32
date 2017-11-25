@@ -71,11 +71,12 @@ of the License, or (at your option) any later version.
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <shellapi.h>
+#include <assert.h>
 #endif
 
 #include <signal.h>
 
-#define BUILDDATE " 20171119"
+#define BUILDDATE " 20171125"
 
 static int32_t floor_over_floor;
 
@@ -269,195 +270,185 @@ void message(const char *fmt, ...)
         OSD_Printf("%s\n", tmpstr);
 }
 
-typedef struct _mapundo
+static int32_t osdcmd_quit(const osdfuncparm_t *parm);
+
+////////// UNDO/REDO SYSTEM //////////
+typedef struct mapundo_
 {
-    int32_t numsectors;
-    int32_t numwalls;
-    int32_t numsprites;
-
-    sectortype *sectors;
-    walltype *walls;
-    spritetype *sprites;
-
     int32_t revision;
+    int32_t num[3];  // numsectors, numwalls, numsprites
 
-    uint32_t sectcrc, wallcrc, spritecrc;
-    uint32_t sectsiz, wallsiz, spritesiz;
+    // These exist temporarily as sector/wall/sprite data, but are compressed
+    // most of the time.  +4 bytes refcount at the beginning.
+    char *sws[3];  // sector, wall, sprite
 
-    struct _mapundo *next; // 'redo' loads this
-    struct _mapundo *prev; // 'undo' loads this
+    uint32_t crc[3];
+
+    struct mapundo_ *next;  // 'redo' loads this
+    struct mapundo_ *prev;  // 'undo' loads this
 } mapundo_t;
 
 mapundo_t *mapstate = NULL;
 
 int32_t map_revision = 1;
 
+#define QADDNSZ 400
+
+
+static int32_t try_match_with_prev(int32_t idx, int32_t numsthgs, uint32_t crc)
+{
+    if (mapstate->prev && mapstate->prev->num[idx]==numsthgs && mapstate->prev->crc[idx]==crc)
+    {
+        // found match!
+        mapstate->sws[idx] = mapstate->prev->sws[idx];
+        (*(int32_t *)mapstate->sws[idx])++;  // increase refcount!
+
+        return 1;
+    }
+
+    return 0;
+}
+
+static void create_compressed_block(int32_t idx, const void *srcdata, uint32_t size, uint32_t crc)
+{
+    uint32_t j;
+
+    // allocate
+    mapstate->sws[idx] = Bmalloc(4 + size + QADDNSZ);
+    if (!mapstate->sws[idx]) { initprintf("OUT OF MEM in undo/redo\n"); osdcmd_quit(NULL); }
+
+    // compress & realloc
+    j = qlz_compress(srcdata, mapstate->sws[idx]+4, size, state_compress);
+    mapstate->sws[idx] = Brealloc(mapstate->sws[idx], 4 + j);
+    if (!mapstate->sws[idx]) { initprintf("COULD not realloc in undo/redo\n"); osdcmd_quit(NULL); }
+
+    // write refcount
+    *(int32_t *)mapstate->sws[idx] = 1;
+
+    mapstate->crc[idx] = crc;
+}
+
+static void free_self_and_successors(mapundo_t *mapst)
+{
+    mapundo_t *cur = mapst;
+
+    mapst->prev = NULL;  // break the back link
+
+    while (cur->next)
+        cur = cur->next;
+
+    while (1)
+    {
+        int32_t i;
+        mapundo_t *const prev = cur->prev;
+
+        for (i=0; i<3; i++)
+        {
+            int32_t *const refcnt = (int32_t *)cur->sws[i];
+
+            if (refcnt)
+            {
+                (*refcnt)--;
+                if (*refcnt == 0)
+                    Bfree(refcnt);  // free the block!
+            }
+        }
+
+        Bfree(cur);
+
+        if (!prev)
+            break;
+
+        cur = prev;
+    }
+}
+
+// NOTE: only _consecutive_ matching (size+crc) sector/wall/sprite blocks are
+// shared!
 void create_map_snapshot(void)
 {
-    int32_t j;
-    uint32_t tempcrc;
-
-    /*
-    if (mapstate->prev == NULL && mapstate->next != NULL) // should be the first map version
-    mapstate = mapstate->next;
-    */
-
     if (mapstate == NULL)
     {
-        mapstate = (mapundo_t *)Bcalloc(1, sizeof(mapundo_t));
-        mapstate->revision = map_revision = 1;
+        // create initial mapstate
+
+        map_revision = 1;
+
+        mapstate = Bcalloc(1, sizeof(mapundo_t));
+        mapstate->revision = map_revision;
         mapstate->prev = mapstate->next = NULL;
     }
     else
     {
-        if (mapstate->next != NULL)
-        {
-            mapundo_t *next = mapstate->next;
-            next->prev = NULL;
+        if (mapstate->next)
+            free_self_and_successors(mapstate->next);
+        // now, have no successors
 
-            while (next->next)
-                next = next->next;
-
-            do
-            {
-                if (next->sectors && (next->prev == NULL || (next->sectcrc != next->prev->sectcrc)))
-                    Bfree(next->sectors);
-                if (next->walls && (next->prev == NULL || (next->wallcrc != next->prev->wallcrc)))
-                    Bfree(next->walls);
-                if (next->sprites && (next->prev == NULL || (next->spritecrc != next->prev->spritecrc)))
-                    Bfree(next->sprites);
-                if (!next->prev)
-                {
-                    Bfree(next);
-                    break;
-                }
-                next = next->prev;
-                Bfree(next->next);
-            }
-            while (next);
-        }
-
-        mapstate->next = (mapundo_t *)Bcalloc(1, sizeof(mapundo_t));
+        // calloc because not everything may be set in the following:
+        mapstate->next = Bcalloc(1, sizeof(mapundo_t));
         mapstate->next->prev = mapstate;
 
         mapstate = mapstate->next;
+
         mapstate->revision = ++map_revision;
     }
 
+
     fixspritesectors();
 
-    numsprites = 0;
-    for (j=MAXSPRITES-1; j>=0; j--)
-    {
-        if (sprite[j].statnum != MAXSTATUS)
-            numsprites++;
-    }
-
-    mapstate->numsectors = numsectors;
-    mapstate->numwalls = numwalls;
-    mapstate->numsprites = numsprites;
-
-    tempcrc = crc32once((uint8_t *)&sector[0],sizeof(sectortype) * numsectors);
+    mapstate->num[0] = numsectors;
+    mapstate->num[1] = numwalls;
+    mapstate->num[2] = numsprites;
 
 
     if (numsectors)
     {
-        if (mapstate->prev && mapstate->prev->sectcrc == tempcrc)
-        {
-            mapstate->sectors = mapstate->prev->sectors;
-            mapstate->sectsiz = mapstate->prev->sectsiz;
-            mapstate->sectcrc = tempcrc;
-            /* OSD_Printf("found a match between undo sectors\n"); */
-        }
-        else
-        {
-            mapstate->sectors = (sectortype *)Bcalloc(1, sizeof(sectortype) * numsectors);
-            mapstate->sectsiz = j = qlz_compress(&sector[0], (char *)&mapstate->sectors[0],
-                                                 sizeof(sectortype) * numsectors, state_compress);
-            mapstate->sectors = (sectortype *)Brealloc(mapstate->sectors, j);
-            mapstate->sectcrc = tempcrc;
-        }
+        int32_t j;
+        uint32_t tempcrc = crc32once((uint8_t *)sector, numsectors*sizeof(sectortype));
+
+        if (!try_match_with_prev(0, numsectors, tempcrc))
+            create_compressed_block(0, sector, numsectors*sizeof(sectortype), tempcrc);
 
         if (numwalls)
         {
-            tempcrc = crc32once((uint8_t *)&wall[0],sizeof(walltype) * numwalls);
+            tempcrc = crc32once((uint8_t *)wall, numwalls*sizeof(walltype));
 
-
-            if (mapstate->prev && mapstate->prev->wallcrc == tempcrc)
-            {
-                mapstate->walls = mapstate->prev->walls;
-                mapstate->wallsiz = mapstate->prev->wallsiz;
-                mapstate->wallcrc = tempcrc;
-                /* OSD_Printf("found a match between undo walls\n"); */
-            }
-            else
-            {
-                mapstate->walls = (walltype *)Bcalloc(1, sizeof(walltype) * numwalls);
-                mapstate->wallsiz = j = qlz_compress(&wall[0], (char *)&mapstate->walls[0],
-                                                     sizeof(walltype) * numwalls, state_compress);
-                mapstate->walls = (walltype *)Brealloc(mapstate->walls, j);
-                mapstate->wallcrc = tempcrc;
-            }
+            if (!try_match_with_prev(1, numwalls, tempcrc))
+                create_compressed_block(1, wall, numwalls*sizeof(walltype), tempcrc);
         }
 
         if (numsprites)
         {
-            tempcrc = crc32once((uint8_t *)&sprite[0],sizeof(spritetype) * MAXSPRITES);
+            tempcrc = crc32once((uint8_t *)sprite, MAXSPRITES*sizeof(spritetype));
 
-            if (mapstate->prev && mapstate->prev->spritecrc == tempcrc)
-            {
-                mapstate->sprites = mapstate->prev->sprites;
-                mapstate->spritesiz = mapstate->prev->spritesiz;
-                mapstate->spritecrc = tempcrc;
-                /*OSD_Printf("found a match between undo sprites\n");*/
-            }
-            else
+            if (!try_match_with_prev(2, numsprites, tempcrc))
             {
                 int32_t i = 0;
-                spritetype *tspri = (spritetype *)Bcalloc(1, sizeof(spritetype) * numsprites),
-                            *spri = &tspri[0];
-                mapstate->sprites = (spritetype *)Bcalloc(1, sizeof(spritetype) * numsprites);
+                spritetype *const tspri = Bmalloc(numsprites*sizeof(spritetype) + 4);
+                spritetype *spri = tspri;
+
+                if (!tspri) { initprintf("OUT OF MEM in undo/redo (2)\n"); osdcmd_quit(NULL); }
 
                 for (j=0; j<MAXSPRITES && i < numsprites; j++)
-                {
                     if (sprite[j].statnum != MAXSTATUS)
                     {
-                        Bmemcpy(spri++,&sprite[j],sizeof(spritetype));
+                        Bmemcpy(spri++, &sprite[j], sizeof(spritetype));
                         i++;
                     }
-                }
-                mapstate->spritesiz = j = qlz_compress(&tspri[0], (char *)&mapstate->sprites[0],
-                                                       sizeof(spritetype) * numsprites, state_compress);
-                mapstate->sprites = (spritetype *)Brealloc(mapstate->sprites, j);
-                mapstate->spritecrc = tempcrc;
+
+                create_compressed_block(2, tspri, numsprites*sizeof(spritetype), tempcrc);
                 Bfree(tspri);
             }
         }
     }
+
+    CheckMapCorruption(5);
 }
 
 void map_undoredo_free(void)
 {
     if (mapstate)
     {
-        while (mapstate->next)
-            mapstate = mapstate->next;
-
-        while (mapstate->prev)
-        {
-            mapundo_t *state = mapstate->prev;
-            if (mapstate->sectors && (mapstate->sectcrc != mapstate->prev->sectcrc)) Bfree(mapstate->sectors);
-            if (mapstate->walls && (mapstate->wallcrc != mapstate->prev->wallcrc)) Bfree(mapstate->walls);
-            if (mapstate->sprites && (mapstate->spritecrc != mapstate->prev->spritecrc)) Bfree(mapstate->sprites);
-            Bfree(mapstate);
-            mapstate = state;
-        }
-
-        if (mapstate->sectors) Bfree(mapstate->sectors);
-        if (mapstate->walls) Bfree(mapstate->walls);
-        if (mapstate->sprites) Bfree(mapstate->sprites);
-
-        Bfree(mapstate);
+        free_self_and_successors(mapstate);
         mapstate = NULL;
     }
 
@@ -472,53 +463,60 @@ int32_t map_undoredo(int32_t dir)
 
     if (dir)
     {
-        if (mapstate->next == NULL || !mapstate->next->numsectors) return 1;
+        if (mapstate->next == NULL || !mapstate->next->num[0]) return 1;
 
         //        while (map_revision+1 != mapstate->revision && mapstate->next)
         mapstate = mapstate->next;
     }
     else
     {
-        if (mapstate->prev == NULL || !mapstate->prev->numsectors) return 1;
+        if (mapstate->prev == NULL || !mapstate->prev->num[0]) return 1;
 
         //        while (map_revision-1 != mapstate->revision && mapstate->prev)
         mapstate = mapstate->prev;
     }
 
-    numsectors = mapstate->numsectors;
-    numwalls = mapstate->numwalls;
-    numsprites = mapstate->numsprites;
+    numsectors = mapstate->num[0];
+    numwalls = mapstate->num[1];
+    numsprites = mapstate->num[2];
     map_revision = mapstate->revision;
-
-    initspritelists();
 
     Bmemset(show2dsector, 0, sizeof(show2dsector));
     Bmemset(show2dsprite, 0, sizeof(show2dsprite));
     Bmemset(show2dwall, 0, sizeof(show2dwall));
+    // Bmemset(hlsectorbitmap, 0, sizeof(hlsectorbitmap));
 
-    if (mapstate->numsectors)
+    initspritelists();
+
+    if (mapstate->num[0])
     {
-        qlz_decompress((const char *)&mapstate->sectors[0],  &sector[0], state_decompress);
+        // restore sector[]
+        qlz_decompress(mapstate->sws[0]+4, sector, state_decompress);
 
-        if (mapstate->numwalls)
-            qlz_decompress((const char *)&mapstate->walls[0],  &wall[0], state_decompress);
+        if (mapstate->num[1])  // restore wall[]
+            qlz_decompress(mapstate->sws[1]+4, wall, state_decompress);
 
-        if (mapstate->numsprites)
-            qlz_decompress((const char *)&mapstate->sprites[0],  &sprite[0], state_decompress);
+        if (mapstate->num[2])  // restore sprite[]
+            qlz_decompress(mapstate->sws[2]+4, sprite, state_decompress);
     }
 
-    updatenumsprites();
-
-    for (i=0; i<numsprites; i++)
+    // insert sprites
+    for (i=0; i<mapstate->num[2]; i++)
     {
         if ((sprite[i].cstat & 48) == 48) sprite[i].cstat &= ~48;
-        insertsprite(sprite[i].sectnum,sprite[i].statnum);
+        assert((unsigned)sprite[i].sectnum < (unsigned)numsectors
+                   && (unsigned)sprite[i].statnum < MAXSTATUS);
+        insertsprite(sprite[i].sectnum, sprite[i].statnum);
     }
+
+    assert(numsprites == mapstate->num[2]);
 
 #ifdef POLYMER
     if (qsetmode == 200 && rendmode == 4)
         polymer_loadboard();
 #endif
+    CheckMapCorruption(4);
+
     return 0;
 }
 
@@ -5137,6 +5135,8 @@ static void Keys3d(void)
                 {
                     if (sprite[searchwall].picnum==ST1)  // dmc2017
                         Bsprintf(lines[num++],"^251Sprite %d^1 %s", searchwall, SectorEffectorText(searchwall));
+                    else if (sprite[searchwall].picnum>=1900 && sprite[searchwall].picnum<=1999)  // dmc2017
+                        Bsprintf(lines[num++],"^251Sprite %d^1 %s", searchwall, TrackText(searchwall));
                     else
                         Bsprintf(lines[num++],"^251Sprite %d^1 %s", searchwall, names[sprite[searchwall].picnum]);
                 }
@@ -5472,7 +5472,7 @@ static void Keys3d(void)
 
             keystatus[KEYSC_K] = 0;
             switch (searchstat)
-                {
+            {
             case 3:
                 data = TEST(sp->extra, SPRX_SKILL);
 
@@ -5489,149 +5489,267 @@ static void Keys3d(void)
         }
         
         if (PRESSED_KEYSC(1) && ASSERT_AIMING)
-        {
-            if (searchstat == 3) 
-            {            
-                if (eitherSHIFT) 
-                {
-                    strcpy(tempbuf, "Sprite tag 11 (shade): ");
-                    SPRITE_TAG11(searchwall) = getnumber256(tempbuf, SPRITE_TAG11(searchwall), 127, 1);
-                }
-                else
-                {
-                    strcpy(tempbuf, "Sprite tag 1 (hitag): ");
-                    SPRITE_TAG1(searchwall) = getnumber256(tempbuf, SPRITE_TAG1(searchwall), 65536L, 1);
-                }
-                message(" ");
+        {            
+            switch (searchstat)
+            {
+                case 0: case 4: 
+                    if (eitherSHIFT) 
+                    {
+                        wall[searchwall].shade = getnumber256("Wall tag 11 (shade): ", wall[searchwall].shade, 128, 1);
+                    }
+                    else
+                    {
+                        wall[searchwall].hitag = getnumber256("Wall tag 1 (hitag): ", wall[searchwall].hitag, 65536L, 1);
+                    }
+                    message(" ");
+                    break;
+                case 1: case 2: 
+                    if (eitherSHIFT) 
+                    {
+                        int8_t oshade = AIMED_CF_SEL(shade);
+                        Bsprintf(tempbuf, "Sector tag 11 (shade): ");
+                        getnumberptr256(tempbuf, &AIMED_CF_SEL(shade), sizeof(int8_t), 128, 1, NULL);
+                        asksave |= (AIMED_CF_SEL(shade) != oshade);
+                    }
+                    else
+                    {
+                        Bsprintf(tempbuf, "Sector tag 1 (hitag): ");
+                        getnumberptr256(tempbuf, &AIMED(hitag), sizeof(int16_t), 65536L, 1, NULL);
+                    }
+                    message(" ");
+                    break;
+                case 3: 
+                    if (eitherSHIFT) 
+                    {
+                        strcpy(tempbuf, "Sprite tag 11 (shade): ");
+                        SPRITE_TAG11(searchwall) = getnumber256(tempbuf, SPRITE_TAG11(searchwall), 128, 1);
+                    }
+                    else
+                    {
+                        strcpy(tempbuf, "Sprite tag 1 (hitag): ");
+                        SPRITE_TAG1(searchwall) = getnumber256(tempbuf, SPRITE_TAG1(searchwall), 65536L, 1);
+                    }
+                    message(" ");
+                    break;
             }
         }
         if (PRESSED_KEYSC(2) && ASSERT_AIMING)
         {
-            if (searchstat == 3) 
-            {            
-                if (eitherSHIFT) 
-                {
-                    strcpy(tempbuf, "Sprite tag 12 (pal): ");
-                    SPRITE_TAG12(searchwall) = getnumber256(tempbuf, SPRITE_TAG12(searchwall), 127, 0);
-                }
-                else
-                {
-                    strcpy(tempbuf, "Sprite tag 2 (lotag): "); 
-                    if (sprite[searchwall].picnum == ST1 && sprite[searchwall].hitag == 1002)
+            switch (searchstat)
+            {
+                case 0: case 4: 
+                    if (eitherSHIFT) 
                     {
-                        int16_t oldtag = sprite[searchwall].lotag;
-                    
-                        SPRITE_TAG2(searchwall) = _getnumber256(tempbuf, SPRITE_TAG2(searchwall), 65536L, 1, (void *)MusicAndSFXTagText);
-                    
-                        if ((sprite[searchwall].filler&1) && sprite[searchwall].lotag != oldtag)
-                        {
-                            sprite[searchwall].filler &= ~1;
-                            oldtag = SNUM(oldtag);
-                            S_StopEnvSound(oldtag, searchwall);
-                        }
+                        wall[searchwall].pal = getnumber256("Wall tag 12 (pal): ", wall[searchwall].pal, 128, 0);
                     }
                     else
-                        SPRITE_TAG2(searchwall) = getnumber256(tempbuf, SPRITE_TAG2(searchwall), 65536L, 1);
-                }
-                message(" ");
+                    {
+                        wall[searchwall].lotag = getnumber256("Wall tag 2 (lotag): ", wall[searchwall].lotag, 65536L, 1);
+                    }
+                    message(" ");
+                    break;
+                case 1: case 2: 
+                    if (eitherSHIFT) 
+                    {
+                        int8_t opal = AIMED_CF_SEL(pal);
+                        Bsprintf(tempbuf, "Sector tag 12 (pal): ");
+                        getnumberptr256(tempbuf, &AIMED_CF_SEL(pal), sizeof(int8_t), 128, 1, NULL);
+                        asksave |= (AIMED_CF_SEL(pal) != opal);
+                    }
+                    else
+                    {
+                        Bsprintf(tempbuf, "Sector tag 2 (lotag): ");
+                        getnumberptr256(tempbuf, &AIMED(lotag), sizeof(int16_t), 65536L, 1, NULL);
+                    }
+                    message(" ");
+                    break;
+                case 3: 
+                    if (eitherSHIFT) 
+                    {
+                        strcpy(tempbuf, "Sprite tag 12 (pal): ");
+                        SPRITE_TAG12(searchwall) = getnumber256(tempbuf, SPRITE_TAG12(searchwall), 127, 0);
+                    }
+                    else
+                    {
+                        strcpy(tempbuf, "Sprite tag 2 (lotag): "); 
+                        if (sprite[searchwall].picnum == ST1 && sprite[searchwall].hitag == 1002)
+                        {
+                            int16_t oldtag = sprite[searchwall].lotag;
+                        
+                            SPRITE_TAG2(searchwall) = _getnumber256(tempbuf, SPRITE_TAG2(searchwall), 65536L, 1, (void *)MusicAndSFXTagText);
+                        
+                            if ((sprite[searchwall].filler&1) && sprite[searchwall].lotag != oldtag)
+                            {
+                                sprite[searchwall].filler &= ~1;
+                                oldtag = SNUM(oldtag);
+                                S_StopEnvSound(oldtag, searchwall);
+                            }
+                        }
+                        else
+                            SPRITE_TAG2(searchwall) = getnumber256(tempbuf, SPRITE_TAG2(searchwall), 65536L, 1);
+                    }
+                    message(" ");
+                    break;
             }
         }
         if (PRESSED_KEYSC(3) && ASSERT_AIMING)
         {
-            if (searchstat == 3) 
-            {            
-                if (eitherSHIFT) 
-                {
-                    strcpy(tempbuf, "Sprite tag 13 (xoffset/yoffset): ");
-                    i = getnumber256(tempbuf, SPRITE_TAG13(searchwall), 65536L, 1);
-                    SET_SPRITE_TAG13(searchwall, i);
-                }
-                else
-                {
-                    strcpy(tempbuf, "Sprite tag 3 (clipdist) : ");
-                    SPRITE_TAG3(searchwall) = getnumber256(tempbuf, SPRITE_TAG3(searchwall), 127, 1);
-                }
-                message(" ");
+            switch (searchstat)
+            {
+                case 0: case 4: 
+                    strcpy(tempbuf, "Wall tag 3 (xpanning): ");
+                    wall[searchwall].xpanning = getnumber256(tempbuf, wall[searchwall].xpanning, 65536L, 0);
+                    break;
+                case 1: case 2:
+                    strcpy(tempbuf, "Sector tag 3 (ceilingxpanning): ");
+                    sector[searchsector].ceilingxpanning = getnumber256(tempbuf, sector[searchsector].ceilingxpanning, 65536L, 0);
+                    break;
+                case 3: 
+                     if (eitherSHIFT) 
+                     {
+                         strcpy(tempbuf, "Sprite tag 13 (xoffset/yoffset): ");
+                         i = getnumber256(tempbuf, SPRITE_TAG13(searchwall), 65536L, 1);
+                         SET_SPRITE_TAG13(searchwall, i);
+                     }
+                     else
+                     {
+                         strcpy(tempbuf, "Sprite tag 3 (clipdist) : ");
+                         SPRITE_TAG3(searchwall) = getnumber256(tempbuf, SPRITE_TAG3(searchwall), 128, 1);
+                     }
+                     message(" ");
+                     break;
             }
         }
         if (PRESSED_KEYSC(4) && ASSERT_AIMING)
         {
-            if (searchstat == 3) 
-            {            
-                if (eitherSHIFT) 
-                {
-                    strcpy(tempbuf, "Sprite tag 14 (xrepeat/yrepeat): ");
-                    i = getnumber256(tempbuf, SPRITE_TAG14(searchwall), 65536L, 1);
-                    SET_SPRITE_TAG14(searchwall, i);
-                }
-                else
-                {
-                    strcpy(tempbuf, "Sprite tag 4 (ang) : ");
-                    SPRITE_TAG4(searchwall) = getnumber256(tempbuf, SPRITE_TAG4(searchwall), 65536L, 1);
-                }
-                message(" ");
+            switch (searchstat)
+            {
+                case 0: case 4: 
+                    strcpy(tempbuf, "Wall tag 4 (ypanning): ");
+                    wall[searchwall].ypanning = getnumber256(tempbuf, wall[searchwall].ypanning, 65536L, 0);
+                    break;
+                case 1: case 2:
+                    strcpy(tempbuf, "Sector tag 4 (ceilingypanning): ");
+                    sector[searchsector].ceilingypanning = getnumber256(tempbuf, sector[searchsector].ceilingypanning, 65536L, 0);
+                    break;
+                case 3:   
+                    if (eitherSHIFT) 
+                    {
+                        strcpy(tempbuf, "Sprite tag 14 (xrepeat/yrepeat): ");
+                        i = getnumber256(tempbuf, SPRITE_TAG14(searchwall), 65536L, 1);
+                        SET_SPRITE_TAG14(searchwall, i);
+                    }
+                    else
+                    {
+                        strcpy(tempbuf, "Sprite tag 4 (ang) : ");
+                        SPRITE_TAG4(searchwall) = getnumber256(tempbuf, SPRITE_TAG4(searchwall), 65536L, 1);
+                    }
+                    message(" ");
+                    break;
             }
         }
         if (PRESSED_KEYSC(5) && ASSERT_AIMING)
         {
-            if (searchstat == 3) 
-            {            
-                if (eitherSHIFT) 
-                {
-                    strcpy(tempbuf, "Sprite tag 15 (z): ");
-                    SPRITE_TAG15(searchwall) = getnumber256(tempbuf, SPRITE_TAG15(searchwall), 65536L, 1);
-                }
-                else
-                {
-                    strcpy(tempbuf, "Sprite tag 5 (xvel) : ");
-                    SPRITE_TAG5(searchwall) = getnumber256(tempbuf, SPRITE_TAG5(searchwall), 65536L, 1);
-                }
-                message(" ");
+            switch (searchstat)
+            {
+                case 0: case 4: 
+                    break;
+                case 1: case 2:
+                    strcpy(tempbuf, "Sector tag 5 (floorxpanning): ");
+                    sector[searchsector].floorxpanning = getnumber256(tempbuf, sector[searchsector].floorxpanning, 65536L, 0);
+                    break;
+                case 3:     
+                    if (eitherSHIFT) 
+                    {
+                        strcpy(tempbuf, "Sprite tag 15 (z): ");
+                        SPRITE_TAG15(searchwall) = getnumber256(tempbuf, SPRITE_TAG15(searchwall), 65536L, 1);
+                    }
+                    else
+                    {
+                        strcpy(tempbuf, "Sprite tag 5 (xvel) : ");
+                        SPRITE_TAG5(searchwall) = getnumber256(tempbuf, SPRITE_TAG5(searchwall), 65536L, 1);
+                    }
+                    message(" ");
+                    break;
             }
         }
         if (PRESSED_KEYSC(6) && ASSERT_AIMING)
         {
-            if (searchstat == 3) 
-            {          
-                strcpy(tempbuf, "Sprite tag 6 (yvel) : ");
-                SPRITE_TAG6(searchwall) = getnumber256(tempbuf, SPRITE_TAG6(searchwall), 65536L, 1);
-                message(" ");
+            switch (searchstat)
+            {
+                case 0: case 4: 
+                    break;
+                case 1: case 2:
+                    strcpy(tempbuf, "Sector tag 6 (floorypanning): ");
+                    sector[searchsector].floorypanning = getnumber256(tempbuf, sector[searchsector].floorypanning, 65536L, 0);
+                    break;
+                case 3:   
+                    strcpy(tempbuf, "Sprite tag 6 (yvel) : ");
+                    SPRITE_TAG6(searchwall) = getnumber256(tempbuf, SPRITE_TAG6(searchwall), 65536L, 1);
+                    message(" ");
+                    break;
             }
         }
         if (PRESSED_KEYSC(7) && ASSERT_AIMING)
         {
-            if (searchstat == 3) 
-            {          
-                strcpy(tempbuf, "Sprite tag 7 (zvel 1) <0-255> : ");
-                SPRITE_TAG7(searchwall) = getnumber256(tempbuf, SPRITE_TAG7(searchwall),  255, 1);
-                message(" ");
+            switch (searchstat)
+            {
+                case 0: case 4: 
+                    break;
+                case 1: case 2:
+                    strcpy(tempbuf, "Sector tag 7 (floorypanning): ");
+                    sector[searchsector].floorypanning = getnumber256(tempbuf, sector[searchsector].floorypanning, 65536L, 0);
+                    break;
+                case 3: 
+                    strcpy(tempbuf, "Sprite tag 7 (zvel 1) <0-255> : ");
+                    SPRITE_TAG7(searchwall) = getnumber256(tempbuf, SPRITE_TAG7(searchwall),  255, 1);
+                    message(" ");
+                    break;
             }
         }
         if (PRESSED_KEYSC(8) && ASSERT_AIMING)
         {
-            if (searchstat == 3) 
-            {          
-                strcpy(tempbuf, "Sprite tag 8 (zvel 2) <0-255> : ");
-                SPRITE_TAG8(searchwall) = getnumber256(tempbuf, SPRITE_TAG8(searchwall), 255, 1);
-                message(" ");
+            switch (searchstat)
+            {
+                case 0: case 4: 
+                    break;
+                case 1: case 2: 
+                    break;
+                case 3: 
+                    strcpy(tempbuf, "Sprite tag 8 (zvel 2) <0-255> : ");
+                    SPRITE_TAG8(searchwall) = getnumber256(tempbuf, SPRITE_TAG8(searchwall), 255, 1);
+                    message(" ");
+                    break;
             }
         }
         if (PRESSED_KEYSC(9) && ASSERT_AIMING)
         {
-            if (searchstat == 3) 
-            {          
-                strcpy(tempbuf, "Sprite tag 9 (owner 1) <0-255> : ");
-                SPRITE_TAG9(searchwall) = getnumber256(tempbuf, SPRITE_TAG9(searchwall), 255, 1);
-                message(" ");
+            switch (searchstat)
+            {
+                case 0: case 4: 
+                    break;
+                case 1: case 2: 
+                    break;
+                case 3: 
+                    strcpy(tempbuf, "Sprite tag 9 (owner 1) <0-255> : ");
+                    SPRITE_TAG9(searchwall) = getnumber256(tempbuf, SPRITE_TAG9(searchwall), 255, 1);
+                    message(" ");
+                    break;
             }
         }
         if (PRESSED_KEYSC(0) && ASSERT_AIMING)
         {
-            if (searchstat == 3) 
-            {          
-                strcpy(tempbuf, "Sprite tag 10 (owner 2) <0-255> : ");
-                SPRITE_TAG10(searchwall) = getnumber256(tempbuf, SPRITE_TAG10(searchwall), 255, 1);
-                message(" ");
+            switch (searchstat)
+            {
+                case 0: case 4: 
+                    break;
+                case 1: case 2: 
+                    break;
+                case 3: 
+                    strcpy(tempbuf, "Sprite tag 10 (owner 2) <0-255> : ");
+                    SPRITE_TAG10(searchwall) = getnumber256(tempbuf, SPRITE_TAG10(searchwall), 255, 1);
+                    message(" ");
+                    break;
             }
         }
     }
@@ -6656,12 +6774,7 @@ static void Keys3d(void)
         }
         else if (AIMING_AT_SPRITE)
         {
-            /*if (sprite[searchwall].picnum == SECTOREFFECTOR)
-            {
-                sprite[searchwall].lotag =
-                    _getnumber256("Sprite lotag: ", sprite[searchwall].lotag, BTAG_MAX, 0, (void *)SectorEffectorTagText);
-            }
-            else*/ if (sprite[searchwall].picnum == ST1 && sprite[searchwall].hitag == 1002) // dmc2017
+            if (sprite[searchwall].picnum == ST1 && sprite[searchwall].hitag == 1002) // dmc2017
             {
                 int16_t oldtag = sprite[searchwall].lotag;
 
@@ -6686,7 +6799,7 @@ static void Keys3d(void)
         {
             int16_t ohitag = AIMED(hitag);
             Bsprintf(tempbuf, "%s hitag: ", Typestr_wss[searchstat]);
-            AIMED(hitag) = getnumber256(tempbuf, ohitag, BTAG_MAX,0);
+            AIMED(hitag) = getnumber256(tempbuf, ohitag, BTAG_MAX,1);
             asksave |= (AIMED(hitag) != ohitag);
         }
     }
