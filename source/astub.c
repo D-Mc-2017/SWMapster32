@@ -76,7 +76,7 @@ of the License, or (at your option) any later version.
 
 #include <signal.h>
 
-#define BUILDDATE " 20171125"
+#define BUILDDATE " 20171220"
 
 static int32_t floor_over_floor;
 
@@ -168,6 +168,7 @@ static const char *Typestr_wss[] = { "Wall", "Sector", "Sector", "Sprite", "Wall
 #define AIMED_CEILINGFLOOR(Field) CEILINGFLOOR(searchsector, Field)
 
 #define AIMED_SEL_WALL(Field) WALFLD(SELECT_WALL(), Field)
+#define Z(value) ((long)(value) << 8)
 
 // selects from wall proper or its mask
 #define OVR_WALL(iWal, Field) (*(AIMING_AT_WALL ? &WALFLD(iWal, Field) : &(wall[iWal].over##Field)))
@@ -2831,198 +2832,130 @@ void ExtShowSpriteData(int16_t spritenum)   //F6
     ContextHelp(spritenum);             // Get context sensitive help */
 }// end ExtShowSpriteData
 
-// Floor Over Floor (duke3d)
-
-// If standing in sector with SE42 or SE44
-// then draw viewing to SE41 and raise all =hi SE43 cielings.
-
-// If standing in sector with SE43 or SE45
-// then draw viewing to SE40 and lower all =hi SE42 floors.
-
-static int32_t fofsizex = -1;
-static int32_t fofsizey = -1;
-#if 0
-static void ResetFOFSize()
+//
+// Floor After Floor (SW)
+//
+static void Ext_FAF_Draw(int32_t spnum,int32_t x,int32_t y,int32_t z,int16_t a,int16_t h)
 {
-    if (fofsizex != -1) tilesizx[FOF] = fofsizex;
-    if (fofsizey != -1) tilesizy[FOF] = fofsizey;
-}
-#endif
-static void ExtSE40Draw(int32_t spnum,int32_t x,int32_t y,int32_t z,int16_t a,int16_t h)
-{
-    static int32_t tempsectorz[MAXSECTORS];
-    static int32_t tempsectorpicnum[MAXSECTORS];
-
-    int32_t i=0,j=0,k=0;
-    int32_t floor1=0,floor2=0,ok=0,fofmode=0,draw_both=0;
+    int32_t j=0,k=0;
+    int32_t floor1=0,floor2=0,fafmode=0;
     int32_t offx,offy,offz;
+    int32_t BFBO=0,BFBO_sect=0,BFO=0;
+    int32_t floor1_sectnum=0,floor1_floorpicnum=0,floor1_ceilingpicnum=0,floor2_sectnum=0;
 
-    if (sprite[spnum].ang!=512) return;
+    // force camera angle
+    a = ang;
 
-    // Things are a little different now, as we allow for masked transparent
-    // floors and ceilings. So the FOF textures is no longer required
-    //	if (!(gotpic[FOF>>3]&(1<<(FOF&7))))
-    //		return;
-    //	gotpic[FOF>>3] &= ~(1<<(FOF&7));
+    // set view mode
+    fafmode=sprite[spnum].hitag;
+    if (sprite[spnum].hitag==VIEW_LEVEL1) fafmode=VIEW_THRU_CEILING;
+    if (sprite[spnum].hitag==VIEW_LEVEL2) fafmode=VIEW_THRU_FLOOR;
 
-    if (tilesizx[562])
-    {
-        fofsizex = tilesizx[562];
-        tilesizx[562] = 0;
-    }
-    if (tilesizy[562])
-    {
-        fofsizey = tilesizy[562];
-        tilesizy[562] = 0;
-    }
-
-    floor1=spnum;
-
-    if (sprite[spnum].lotag==42) fofmode=40;
-    if (sprite[spnum].lotag==43) fofmode=41;
-    if (sprite[spnum].lotag==44) fofmode=40;
-    if (sprite[spnum].lotag==45) fofmode=41;
-
-    // fofmode=sprite[spnum].lotag-2;
-
-    // sectnum=sprite[j].sectnum;
-    // sectnum=cursectnum;
-    ok++;
-
-    /*  recursive?
-    for(j=0;j<MAXSPRITES;j++)
-    {
-    if(
-    sprite[j].sectnum==sectnum &&
-    sprite[j].picnum==1 &&
-    sprite[j].lotag==110
-    ) { DrawFloorOverFloor(j); break;}
-    }
-    */
-
-    // if(ok==0) { Message("no fof",RED); return; }
-
+    // find which floor player is on, save it as floor 1
     for (j=0; j<MAXSPRITES; j++)
     {
-        if (sprite[j].picnum==1 && sprite[j].lotag==fofmode && sprite[j].hitag==sprite[floor1].hitag)
+        if (sprite[j].picnum==ST1 && sprite[j].hitag==fafmode && sprite[j].lotag==sprite[spnum].lotag)
         {
             floor1=j;
-            fofmode=sprite[j].lotag;
-            ok++;
+            floor1_sectnum=sprite[j].sectnum;
             break;
         }
     }
-    // if(ok==1) { Message("no floor1",RED); return; }
 
-    if (fofmode==40) k=41;
-    else k=40;
+    // find the other floor to look into, floor 2
+    if (fafmode==VIEW_THRU_CEILING) k=VIEW_THRU_FLOOR;
+    else k=VIEW_THRU_CEILING;
 
     for (j=0; j<MAXSPRITES; j++)
     {
-        if (sprite[j].picnum==1 && sprite[j].lotag==k && sprite[j].hitag==sprite[floor1].hitag)
+        if (sprite[j].picnum==ST1 && sprite[j].hitag==k && sprite[j].lotag==sprite[floor1].lotag)
         {
             floor2=j;
-            ok++;
+            floor2_sectnum=sprite[j].sectnum;
             break;
         }
     }
 
-    i=floor1;
-    offx=sprite[floor2].x-sprite[floor1].x;
-    offy=sprite[floor2].y-sprite[floor1].y;
-    offz=0;
-
-    if (sprite[floor2].ang >= 1024)
-        offz = sprite[floor2].z;
-    else if (fofmode==41)
-        offz = SPRITESEC(floor2).floorz;
-    else
-        offz = SPRITESEC(floor2).ceilingz;
-
-    if (sprite[floor1].ang >= 1024)
-        offz -= sprite[floor1].z;
-    else if (fofmode==40)
-        offz -= SPRITESEC(floor1).floorz;
-    else
-        offz -= SPRITESEC(floor1).ceilingz;
-
-    // if(ok==2) { Message("no floor2",RED); return; }
-
-    for (j=0; j<MAXSPRITES; j++) // raise ceiling or floor
+    // find the offset sprites BOUND_FLOOR_BASE_OFFSET & BOUND_FLOOR_OFFSET - ST1 hitags 202&203
+    for (j=0; j<MAXSPRITES; j++)
     {
-        if (sprite[j].picnum==1 && sprite[j].lotag==k+2 && sprite[j].hitag==sprite[floor1].hitag)
+        if ((sprite[j].sectnum==floor1_sectnum || sprite[j].sectnum==floor2_sectnum) && sprite[j].picnum==ST1)
         {
-            if (k==40)
+            if (sprite[j].hitag==BOUND_FLOOR_BASE_OFFSET)
             {
-                tempsectorz[sprite[j].sectnum] = SPRITESEC(j).floorz;
-                SPRITESEC(j).floorz += (((z-SPRITESEC(j).floorz)/32768)+1)*32768;
-                tempsectorpicnum[sprite[j].sectnum] = SPRITESEC(j).floorpicnum;
-                SPRITESEC(j).floorpicnum = 562;
+                BFBO=j;
+                BFBO_sect=sprite[j].sectnum;
             }
-            else
+            else if (sprite[j].hitag==BOUND_FLOOR_OFFSET)
             {
-                tempsectorz[sprite[j].sectnum] = SPRITESEC(j).ceilingz;
-                SPRITESEC(j).ceilingz += (((z-SPRITESEC(j).ceilingz)/32768)-1)*32768;
-                tempsectorpicnum[sprite[j].sectnum] = SPRITESEC(j).ceilingpicnum;
-                SPRITESEC(j).ceilingpicnum = 562;
+                BFO=j;
             }
-            draw_both = 1;
         }
     }
 
-    drawrooms(x+offx,y+offy,z+offz,a,h,sprite[floor2].sectnum);
+    // calculate x/y offsets
+    if (BFBO_sect==floor1_sectnum)
+    {
+        offx=sprite[BFO].x-sprite[BFBO].x;
+        offy=sprite[BFO].y-sprite[BFBO].y;
+    }
+    else
+    {
+        offx=sprite[BFBO].x-sprite[BFO].x;
+        offy=sprite[BFBO].y-sprite[BFO].y;
+    }
+
+    // calculate z offset, and set the floor or ceiling picnum to FAF_MIRROR_PIC tile 2356 -empty-
+    floor1_floorpicnum=sector[floor1_sectnum].floorpicnum;
+    floor1_ceilingpicnum=sector[floor1_sectnum].ceilingpicnum;
+    if (fafmode==VIEW_THRU_FLOOR)
+    {
+        offz = sector[floor2_sectnum].ceilingz;
+        offz -= sector[floor1_sectnum].floorz;
+        sector[floor1_sectnum].floorpicnum = FAF_MIRROR_PIC;
+    }
+    else
+    {
+        offz = sector[floor1_sectnum].ceilingz;
+        offz -= sector[floor2_sectnum].floorz;
+        sector[floor1_sectnum].ceilingpicnum = FAF_MIRROR_PIC;
+    }
+
+    // hack
+    // shift the camera by the offsets and call drawrooms 
+    drawrooms(x+offx,y+offy,z+offz,a,h,cursectnum);
+    ExtAnalyzeSprites();
+    drawmasks();
+    // then call drawrooms again with everything back in its place
+    drawrooms(x,y,z,a,h,cursectnum);
     ExtAnalyzeSprites();
     drawmasks();
 
-    if (draw_both)
-    {
-        for (j=0; j<MAXSPRITES; j++) // restore ceiling or floor for the draw both sectors
-        {
-            if (sprite[j].picnum==ST1 && 1==0 &&// SECTOREFFECTOR &&  // dmc2017 disabled 1!=0
-                    sprite[j].lotag==k+2 && sprite[j].hitag==sprite[floor1].hitag)
-            {
-                if (k==40)
-                {
-                    SPRITESEC(j).floorz = tempsectorz[sprite[j].sectnum];
-                    SPRITESEC(j).floorpicnum = tempsectorpicnum[sprite[j].sectnum];
-                }
-                else
-                {
-                    SPRITESEC(j).ceilingz = tempsectorz[sprite[j].sectnum];
-                    SPRITESEC(j).ceilingpicnum = tempsectorpicnum[sprite[j].sectnum];
-                }
-            }// end if
-        }// end for
+    // reset the FAF_MIRROR_PIC changed earlier
+    sector[floor1_sectnum].floorpicnum = floor1_floorpicnum;
+    sector[floor1_sectnum].ceilingpicnum = floor1_ceilingpicnum;
+}
 
-        // Now re-draw
-        drawrooms(x+offx,y+offy,z+offz,a,h,sprite[floor2].sectnum);
-        ExtAnalyzeSprites();
-        drawmasks();
-    }
-
-} // end SE40
-
-static void SE40Code(int32_t x,int32_t y,int32_t z,int32_t a,int32_t h)
+static void FAF_Code(int32_t x,int32_t y,int32_t z,int32_t a,int32_t h)
 {
     int32_t i;
 
     i = 0;
     while (i<MAXSPRITES)
     {
-        int32_t t = sprite[i].lotag;
-        switch (t)
+        if (sprite[i].picnum == ST1)
         {
-            //            case 40:
-            //            case 41:
-            //                ExtSE40Draw(i,x,y,z,a,h);
-            //                break;
-        case 42:
-        case 43:
-        case 44:
-        case 45:
-            if (cursectnum == sprite[i].sectnum)
-                ExtSE40Draw(i,x,y,z,a,h);
-            break;
+            int32_t t = sprite[i].hitag;
+            switch (t)
+            {
+            case VIEW_LEVEL1:
+            case VIEW_LEVEL2:
+            case VIEW_THRU_CEILING:
+            case VIEW_THRU_FLOOR:
+                if (cursectnum == sprite[i].sectnum)
+                    Ext_FAF_Draw(i,x,y,z,a,h);
+                break;
+            }
         }
         i++;
     }
@@ -5218,14 +5151,17 @@ static void Keys3d(void)
                 asksave = 1;
         }
     }
- // dmc2017 
-    // if (PRESSED_KEYSC(3))  /* 3 (toggle floor-over-floor (cduke3d only) */
-    // {
-    //     floor_over_floor = !floor_over_floor;
-    //     //        if (!floor_over_floor) ResetFOFSize();
-    //     message("Floor-over-floor display %s",floor_over_floor?"enabled":"disabled");
-    // }
-
+    
+    if (!(eitherSHIFT || keystatus[KEYSC_QUOTE]))
+    {
+        if (PRESSED_KEYSC(3))  // toggle floor-over-floor
+        {
+            floor_over_floor = !floor_over_floor;
+            //        if (!floor_over_floor) ResetFOFSize();
+            message("Floor-over-floor display %s",floor_over_floor?"enabled":"disabled");
+        }
+    }
+    
     if (PRESSED_KEYSC(F3))
     {
         mlook = !mlook;
@@ -10550,7 +10486,7 @@ void ExtPreCheckKeys(void) // just before drawrooms
         }
         */
 
-        if (floor_over_floor) SE40Code(pos.x,pos.y,pos.z,ang,horiz);
+        if (floor_over_floor) FAF_Code(pos.x,pos.y,pos.z,ang,horiz);
         if (purpleon) clearview(255);
 
         return;

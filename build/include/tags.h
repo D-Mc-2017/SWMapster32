@@ -439,3 +439,19 @@ typedef spritetype SPRITE, *SPRITEp;
 // Wait for trigger to be tripped before moving from this point.
 // Use TAG_TRIGGER_ACTORS defined above is used to trigger the actor.
 #define TRACK_ACTOR_WAIT_FOR_TRIGGER 800
+
+// FAF ST1 hitags
+#define VIEW_LEVEL1 110
+#define VIEW_LEVEL2 111
+#define VIEW_LEVEL3 112
+#define VIEW_LEVEL4 113
+#define VIEW_LEVEL5 114
+#define VIEW_LEVEL6 115
+#define VIEW_THRU_CEILING 120
+#define VIEW_THRU_FLOOR 121
+#define BOUND_FLOOR_BASE_OFFSET 202
+#define BOUND_FLOOR_OFFSET 203
+
+// FAF picnums
+#define FAF_PLACE_MIRROR_PIC 341
+#define FAF_MIRROR_PIC 2356

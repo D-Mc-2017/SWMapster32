@@ -1,4 +1,3 @@
-SWMapster32 V1.0.7:
+SWMapster32 V1.0.8:
 
-Added: wall/sector tagging with ' & [1-0] keycombos
-Fixed: undo/redo bug from Mapster32 rev.2492 3/17/2012
+Added: Basic floor after floor preview in 3d mode 

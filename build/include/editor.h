@@ -13,7 +13,7 @@
 extern "C" {
 #endif
 
-#define VERSION " 1.0.7"
+#define VERSION " 1.0.8"
 
 // Build keys
 #define BK_MOVEFORWARD   0
